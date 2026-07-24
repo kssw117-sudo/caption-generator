@@ -69,7 +69,7 @@
         throw new Error(data.error || 'Ошибка');
       }
     } catch (err) {
-      errorMsg.textContent = 'Не удалось создать оплату. Попробуйте ещё раз.';
+      errorMsg.textContent = 'Ошибка: ' + (err.message || 'неизвестная');
       errorMsg.style.display = 'block';
       btn.disabled = false;
       btn.textContent = 'Купить';
