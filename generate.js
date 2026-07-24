@@ -1,0 +1,41 @@
+// api/generate.js
+// Никакой базы данных. Код доступа один общий для всех, хранится
+// в переменной окружения ACCESS_CODE на Vercel. Меняете его там же,
+// если понадобится (например, если код "утёк").
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { licenseCode, prompt } = req.body;
+
+  if (!licenseCode || licenseCode !== process.env.ACCESS_CODE) {
+    return res.status(403).json({ error: 'Неверный код доступа' });
+  }
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'Нет prompt' });
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    return res.status(500).json({ error: 'Ошибка обращения к ИИ' });
+  }
+}

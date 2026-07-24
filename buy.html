@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Купить доступ</title>
+<style>
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #0A0A12; color: #F5F4FA; font-family: -apple-system, sans-serif; padding: 24px;
+  }
+  .wrap { max-width: 480px; width: 100%; }
+  h1 { font-size: 24px; text-align: center; margin-bottom: 32px; }
+  .plans { display: grid; gap: 16px; }
+  .plan {
+    background: #13131D; border: 1px solid #2A2A3D; border-radius: 14px; padding: 24px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .plan .name { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #7C9BFF; }
+  .plan .price { font-size: 28px; font-weight: 700; }
+  .plan .price span { font-size: 14px; color: #8A889C; font-weight: 400; }
+  .plan button {
+    display: block; width: 100%; text-align: center; text-decoration: none; border: none; cursor: pointer;
+    border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 600;
+    background: linear-gradient(90deg, #00FFD6, #7C5CFF); color: #0A0A12;
+  }
+  .plan button:disabled { opacity: 0.5; cursor: default; }
+  .error { color: #FF5C7A; font-size: 13px; text-align: center; margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Выберите доступ</h1>
+  <div class="plans">
+    <div class="plan">
+      <div class="name">Разовая покупка</div>
+      <div class="price">$29 <span>навсегда</span></div>
+      <button onclick="buy('lifetime', this)">Купить</button>
+    </div>
+
+    <div class="plan">
+      <div class="name">На 30 дней</div>
+      <div class="price">$9 <span>/ месяц</span></div>
+      <button onclick="buy('monthly', this)">Купить</button>
+    </div>
+  </div>
+  <p class="error" id="errorMsg" style="display:none;"></p>
+</div>
+
+<script>
+  async function buy(plan, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Готовим оплату...';
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan })
+      });
+      const data = await res.json();
+
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      } else {
+        throw new Error(data.error || 'Ошибка');
+      }
+    } catch (err) {
+      errorMsg.textContent = 'Не удалось создать оплату. Попробуйте ещё раз.';
+      errorMsg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Купить';
+    }
+  }
+</script>
+
+</body>
+</html>
