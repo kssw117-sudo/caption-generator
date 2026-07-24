@@ -1,8 +1,4 @@
 // api/create-payment.js
-// Создаёт разовую ссылку на оплату через NOWPayments с автоматическим
-// перенаправлением на страницу с кодом после успешной оплаты.
-// Без базы данных — код доступа один общий (TAG92), не привязан к заказу.
-
 const PRICES = {
   lifetime: { amount: 29, currency: 'usd' },
   monthly: { amount: 9, currency: 'usd' }
@@ -37,11 +33,11 @@ export default async function handler(req, res) {
     const npData = await npResponse.json();
 
     if (!npData.invoice_url) {
-      return res.status(500).json({ error: 'Не удалось создать оплату' });
+      return res.status(500).json({ error: npData.message || npData.code || JSON.stringify(npData) });
     }
 
     return res.status(200).json({ paymentUrl: npData.invoice_url });
   } catch (err) {
-    return res.status(500).json({ error: 'Ошибка платёжного сервиса' });
+    return res.status(500).json({ error: 'Ошибка сети: ' + err.message });
   }
 }
