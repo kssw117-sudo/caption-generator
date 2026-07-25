@@ -1,4 +1,8 @@
 // api/create-payment.js
+// Создаёт разовую ссылку на оплату через NOWPayments с автоматическим
+// перенаправлением на страницу с кодом после успешной оплаты.
+// Без базы данных — код доступа один общий (TAG92), не привязан к заказу.
+
 const PRICES = {
   lifetime: { amount: 29, currency: 'usd' },
   monthly: { amount: 9, currency: 'usd' }
@@ -12,6 +16,13 @@ export default async function handler(req, res) {
   const { plan } = req.body;
   if (!plan || !PRICES[plan]) {
     return res.status(400).json({ error: 'Некорректный план' });
+  }
+
+  if (!process.env.PUBLIC_URL) {
+    return res.status(500).json({ error: 'PUBLIC_URL не задан на сервере (пусто в Environment Variables)' });
+  }
+  if (!process.env.NOWPAYMENTS_API_KEY) {
+    return res.status(500).json({ error: 'NOWPAYMENTS_API_KEY не задан на сервере (пусто в Environment Variables)' });
   }
 
   try {
