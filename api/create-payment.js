@@ -44,7 +44,9 @@ export default async function handler(req, res) {
     const npData = await npResponse.json();
 
     if (!npData.invoice_url) {
-      return res.status(500).json({ error: npData.message || npData.code || JSON.stringify(npData) });
+      return res.status(500).json({
+        error: (npData.message || npData.code || JSON.stringify(npData)) + ' | PUBLIC_URL сейчас равен: "' + process.env.PUBLIC_URL + '"'
+      });
     }
 
     return res.status(200).json({ paymentUrl: npData.invoice_url });
