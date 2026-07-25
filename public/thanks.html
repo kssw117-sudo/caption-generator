@@ -1,29 +1,31 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" id="htmlRoot">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Спасибо за покупку!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <style>
   body {
     margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: #0A0A12; color: #F5F4FA; font-family: -apple-system, sans-serif; padding: 24px;
+    background: #F5F4EE; color: #2D2A26; font-family: -apple-system, sans-serif; padding: 24px;
   }
   .card {
-    max-width: 420px; width: 100%; background: #13131D; border: 1px solid #2A2A3D;
+    max-width: 420px; width: 100%; background: #FFFFFF; border: 1px solid #E4E1D6;
     border-radius: 16px; padding: 32px; text-align: center;
   }
-  h1 { font-size: 20px; margin-bottom: 12px; }
-  p { color: #8A889C; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+  h1 { font-size: 20px; margin-bottom: 12px; font-family: 'Fraunces', serif; }
+  [dir="rtl"] h1, [dir="rtl"] body { font-family: 'Cairo', sans-serif; }
+  p { color: #87837A; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
   .code {
     font-size: 26px; font-weight: 700; letter-spacing: 0.08em;
-    background: linear-gradient(90deg, #00FFD6, #7C5CFF);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    padding: 16px; border: 1px dashed #2A2A3D; border-radius: 10px; margin-bottom: 8px;
+    color: #D97757;
+    padding: 16px; border: 1px dashed #E4E1D6; border-radius: 10px; margin-bottom: 8px;
   }
   a.btn {
     display: inline-block; margin-top: 20px; padding: 12px 24px; border-radius: 10px;
-    background: linear-gradient(90deg, #00FFD6, #7C5CFF); color: #0A0A12;
+    background: #D97757; color: #FFFFFF;
     text-decoration: none; font-weight: 600; font-size: 14px;
   }
 </style>
@@ -31,14 +33,48 @@
 <body>
 
 <div class="card">
-  <h1>Спасибо за покупку!</h1>
-  <p>Вот ваш код доступа. Сохраните его — он понадобится при каждом входе в приложение.</p>
+  <h1 id="pageTitle">Спасибо за покупку!</h1>
+  <p id="pageDesc">Вот ваш код доступа. Сохраните его — он понадобится при каждом входе в приложение.</p>
 
-  <!-- ЗАМЕНИТЕ "ВАШ-КОД-ЗДЕСЬ" на тот же код, что вписали в переменную ACCESS_CODE на Vercel -->
   <div class="code">TAG92</div>
 
-  <a class="btn" href="/index.html">Перейти в приложение →</a>
+  <a class="btn" href="/index.html" id="ctaBtn">Перейти в приложение →</a>
 </div>
+
+<script>
+  const translations = {
+    ru: { title: 'Спасибо за покупку!', desc: 'Вот ваш код доступа. Сохраните его — он понадобится при каждом входе в приложение.', cta: 'Перейти в приложение →', rtl: false },
+    en: { title: 'Thank you for your purchase!', desc: 'Here is your access code. Save it — you will need it every time you open the app.', cta: 'Go to the app →', rtl: false },
+    ar: { title: 'شكرًا لشرائك!', desc: 'هذا هو رمز الوصول الخاص بك. احتفظ به — ستحتاجه في كل مرة تفتح فيها التطبيق.', cta: 'الذهاب إلى التطبيق ←', rtl: true },
+    fa: { title: 'از خرید شما متشکریم!', desc: 'این کد دسترسی شماست. آن را ذخیره کنید — هر بار برای ورود به برنامه به آن نیاز خواهید داشت.', cta: 'رفتن به برنامه ←', rtl: true },
+    es: { title: '¡Gracias por tu compra!', desc: 'Aquí está tu código de acceso. Guárdalo — lo necesitarás cada vez que abras la aplicación.', cta: 'Ir a la aplicación →', rtl: false },
+    fr: { title: 'Merci pour votre achat !', desc: 'Voici votre code dʼaccès. Conservez-le — vous en aurez besoin à chaque ouverture de lʼapplication.', cta: 'Aller à lʼapplication →', rtl: false },
+    de: { title: 'Danke für Ihren Kauf!', desc: 'Hier ist Ihr Zugangscode. Bewahren Sie ihn auf — Sie benötigen ihn bei jedem Öffnen der App.', cta: 'Zur App →', rtl: false },
+    it: { title: 'Grazie per il tuo acquisto!', desc: 'Ecco il tuo codice di accesso. Conservalo — ti servirà ogni volta che apri lʼapp.', cta: 'Vai allʼapp →', rtl: false },
+    pt: { title: 'Obrigado pela sua compra!', desc: 'Aqui está o seu código de acesso. Guarde-o — você precisará dele toda vez que abrir o aplicativo.', cta: 'Ir para o aplicativo →', rtl: false },
+    tr: { title: 'Satın aldığınız için teşekkürler!', desc: 'İşte erişim kodunuz. Saklayın — uygulamayı her açtığınızda ihtiyacınız olacak.', cta: 'Uygulamaya git →', rtl: false },
+    zh: { title: '感谢您的购买！', desc: '这是您的访问码。请保存它——每次打开应用时都需要用到。', cta: '前往应用 →', rtl: false },
+    hi: { title: 'खरीदारी के लिए धन्यवाद!', desc: 'यह आपका एक्सेस कोड है। इसे सहेजें — ऐप खोलते समय हर बार इसकी आवश्यकता होगी।', cta: 'ऐप पर जाएं →', rtl: false },
+    ja: { title: 'ご購入ありがとうございます！', desc: 'こちらがアクセスコードです。保存してください — アプリを開くたびに必要になります。', cta: 'アプリへ →', rtl: false },
+    sv: { title: 'Tack för ditt köp!', desc: 'Här är din åtkomstkod. Spara den — du behöver den varje gång du öppnar appen.', cta: 'Gå till appen →', rtl: false },
+    no: { title: 'Takk for kjøpet ditt!', desc: 'Her er tilgangskoden din. Lagre den — du trenger den hver gang du åpner appen.', cta: 'Gå til appen →', rtl: false },
+    da: { title: 'Tak for dit køb!', desc: 'Her er din adgangskode. Gem den — du skal bruge den, hver gang du åbner appen.', cta: 'Gå til appen →', rtl: false },
+    fi: { title: 'Kiitos ostoksestasi!', desc: 'Tässä käyttöoikeuskoodisi. Tallenna se — tarvitset sitä joka kerta, kun avaat sovelluksen.', cta: 'Siirry sovellukseen →', rtl: false },
+    uk: { title: 'Дякуємо за покупку!', desc: 'Ось ваш код доступу. Збережіть його — він знадобиться щоразу під час входу в застосунок.', cta: 'Перейти до застосунку →', rtl: false },
+    be: { title: 'Дзякуй за пакупку!', desc: 'Вось ваш код доступу. Захавайце яго — ён спатрэбіцца кожны раз пры ўваходзе ў праграму.', cta: 'Перайсці ў праграму →', rtl: false },
+    el: { title: 'Ευχαριστούμε για την αγορά σας!', desc: 'Ορίστε ο κωδικός πρόσβασής σας. Αποθηκεύστε τον — θα τον χρειάζεστε κάθε φορά που ανοίγετε την εφαρμογή.', cta: 'Μετάβαση στην εφαρμογή →', rtl: false }
+  };
+
+  const browserLang = (navigator.language || 'ru').slice(0, 2).toLowerCase();
+  const t = translations[browserLang] || translations.en;
+
+  document.getElementById('htmlRoot').setAttribute('lang', browserLang);
+  if (t.rtl) document.getElementById('htmlRoot').setAttribute('dir', 'rtl');
+
+  document.getElementById('pageTitle').textContent = t.title;
+  document.getElementById('pageDesc').textContent = t.desc;
+  document.getElementById('ctaBtn').textContent = t.cta;
+</script>
 
 </body>
 </html>
