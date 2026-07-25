@@ -241,20 +241,20 @@ CTA: ${JSON.stringify(item.cta)}`;
     setUnlocked(true);
   }
 
-  const headingFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : "'Permanent Marker', cursive";
+  const headingFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : "'Fraunces', serif";
   const bodyFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : 'inherit';
 
   if (!unlocked) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#0A0A12', fontFamily: bodyFont }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Cairo:wght@400;700&display=swap');`}</style>
-        <div className="w-full max-w-sm rounded-xl p-6" style={{ background: '#13131D', border: '1px solid #2A2A3D' }}>
+      <div className="min-h-screen flex items-center justify-center px-4" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#F5F4EE', fontFamily: bodyFont }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Cairo:wght@400;700&display=swap');`}</style>
+        <div className="w-full max-w-sm rounded-xl p-6" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6' }}>
           <h1
             className="text-2xl mb-4 flex items-center gap-2"
             style={{ fontFamily: headingFont }}
           >
-            <span style={{ display: 'inline-block', transform: 'skewX(-12deg)', fontFamily: 'sans-serif', fontWeight: 800, background: 'linear-gradient(90deg, #00FFD6, #7C5CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>#</span>
-            <span style={{ background: 'linear-gradient(90deg, #00FFD6, #7C5CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{t.licenseGateTitle}</span>
+            <span style={{ display: 'inline-block', transform: 'skewX(-12deg)', fontFamily: 'sans-serif', fontWeight: 800, background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>#</span>
+            <span style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{t.licenseGateTitle}</span>
           </h1>
           <input
             type="text"
@@ -262,13 +262,13 @@ CTA: ${JSON.stringify(item.cta)}`;
             onChange={(e) => setLicenseCode(e.target.value)}
             placeholder={t.licensePh}
             className="w-full rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none"
-            style={{ background: '#0E0E17', border: '1px solid #2A2A3D', color: '#F5F4FA' }}
+            style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
           />
-          {licenseError && <p className="text-sm mb-3" style={{ color: '#FF5C7A' }}>{licenseError}</p>}
+          {licenseError && <p className="text-sm mb-3" style={{ color: '#B34B3C' }}>{licenseError}</p>}
           <button
             onClick={handleUnlock}
             className="w-full font-medium py-2.5 rounded-lg text-sm"
-            style={{ background: 'linear-gradient(90deg, #00FFD6, #7C5CFF)', color: '#0A0A12' }}
+            style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE' }}
           >
             {t.unlockBtn}
           </button>
@@ -278,67 +278,67 @@ CTA: ${JSON.stringify(item.cta)}`;
   }
 
   return (
-    <div className="min-h-screen py-10 px-4 relative overflow-hidden" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#0A0A12', fontFamily: bodyFont }}>
+    <div className="min-h-screen py-10 px-4 relative overflow-hidden" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#F5F4EE', fontFamily: bodyFont }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Cairo:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Cairo:wght@400;700&display=swap');
         @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(20px,-24px) scale(1.08); } }
         @keyframes pulseDot { 0%, 80%, 100% { opacity: 0.25; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1); } }
       `}</style>
 
-      <div className="absolute rounded-full pointer-events-none" style={{ width: 340, height: 340, background: '#00FFD6', filter: 'blur(90px)', opacity: 0.12, top: -100, left: -80, animation: 'floatBlob 14s ease-in-out infinite' }} />
-      <div className="absolute rounded-full pointer-events-none" style={{ width: 300, height: 300, background: '#7C5CFF', filter: 'blur(90px)', opacity: 0.14, bottom: -80, right: -60, animation: 'floatBlob 16s ease-in-out infinite', animationDelay: '-6s' }} />
-      <div className="absolute rounded-full pointer-events-none" style={{ width: 200, height: 200, background: '#FF5C8A', filter: 'blur(80px)', opacity: 0.08, top: '40%', right: '10%', animation: 'floatBlob 12s ease-in-out infinite', animationDelay: '-3s' }} />
+      <div className="absolute rounded-full pointer-events-none" style={{ width: 340, height: 340, background: '#D97757', filter: 'blur(90px)', opacity: 0.12, top: -100, left: -80, animation: 'floatBlob 14s ease-in-out infinite' }} />
+      <div className="absolute rounded-full pointer-events-none" style={{ width: 300, height: 300, background: '#BD5D3A', filter: 'blur(90px)', opacity: 0.14, bottom: -80, right: -60, animation: 'floatBlob 16s ease-in-out infinite', animationDelay: '-6s' }} />
+      <div className="absolute rounded-full pointer-events-none" style={{ width: 200, height: 200, background: '#C0574B', filter: 'blur(80px)', opacity: 0.08, top: '40%', right: '10%', animation: 'floatBlob 12s ease-in-out infinite', animationDelay: '-3s' }} />
 
       <div className="max-w-xl mx-auto relative">
         <h1
           className="text-3xl leading-tight flex items-center gap-2 mb-2"
           style={{ fontFamily: headingFont, letterSpacing: 'normal' }}
         >
-          <span style={{ display: 'inline-block', transform: 'skewX(-12deg)', fontFamily: 'sans-serif', fontWeight: 800, background: 'linear-gradient(90deg, #00FFD6, #7C5CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>#</span>
-          <span style={{ background: 'linear-gradient(90deg, #00FFD6, #7C5CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{t.title}</span>
+          <span style={{ display: 'inline-block', transform: 'skewX(-12deg)', fontFamily: 'sans-serif', fontWeight: 800, background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>#</span>
+          <span style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{t.title}</span>
         </h1>
-        <p className="text-sm mb-6" style={{ color: '#8A889C' }}>{t.subtitle}</p>
+        <p className="text-sm mb-6" style={{ color: '#87837A' }}>{t.subtitle}</p>
 
-        <div className="rounded-xl p-5 space-y-4" style={{ background: '#13131D', border: '1px solid #2A2A3D', boxShadow: '0 0 24px rgba(124,92,255,0.08)' }}>
+        <div className="rounded-xl p-5 space-y-4" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6', boxShadow: '0 0 24px rgba(189,93,58,0.06)' }}>
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#B7B5C9' }}>{t.businessLabel}</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.businessLabel}</label>
             <input
               type="text"
               value={business}
               onChange={(e) => setBusiness(e.target.value)}
               placeholder={t.businessPh}
               className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-              style={{ background: '#0E0E17', border: '1px solid #2A2A3D', color: '#F5F4FA' }}
-              onFocus={(e) => { e.target.style.borderColor = '#00FFD6'; e.target.style.boxShadow = '0 0 0 3px rgba(0,255,214,0.15)'; }}
-              onBlur={(e) => { e.target.style.borderColor = '#2A2A3D'; e.target.style.boxShadow = 'none'; }}
+              style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
+              onFocus={(e) => { e.target.style.borderColor = '#D97757'; e.target.style.boxShadow = '0 0 0 3px rgba(217,119,87,0.15)'; }}
+              onBlur={(e) => { e.target.style.borderColor = '#E4E1D6'; e.target.style.boxShadow = 'none'; }}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#B7B5C9' }}>{t.brandVoiceLabel}</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.brandVoiceLabel}</label>
             <input
               type="text"
               value={brandVoice}
               onChange={(e) => setBrandVoice(e.target.value)}
               placeholder={t.brandVoicePh}
               className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-              style={{ background: '#0E0E17', border: '1px solid #2A2A3D', color: '#F5F4FA' }}
-              onFocus={(e) => { e.target.style.borderColor = '#00FFD6'; e.target.style.boxShadow = '0 0 0 3px rgba(0,255,214,0.15)'; }}
-              onBlur={(e) => { e.target.style.borderColor = '#2A2A3D'; e.target.style.boxShadow = 'none'; }}
+              style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
+              onFocus={(e) => { e.target.style.borderColor = '#D97757'; e.target.style.boxShadow = '0 0 0 3px rgba(217,119,87,0.15)'; }}
+              onBlur={(e) => { e.target.style.borderColor = '#E4E1D6'; e.target.style.boxShadow = 'none'; }}
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium" style={{ color: '#B7B5C9' }}>
+              <label className="block text-sm font-medium" style={{ color: '#6B6659' }}>
                 {batchMode ? t.batchLabel : t.postLabel}
               </label>
-              <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: '#8A889C' }}>
+              <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: '#87837A' }}>
                 <input
                   type="checkbox"
                   checked={batchMode}
                   onChange={(e) => setBatchMode(e.target.checked)}
-                  style={{ accentColor: '#00FFD6' }}
+                  style={{ accentColor: '#D97757' }}
                 />
                 {t.batchToggle}
               </label>
@@ -350,9 +350,9 @@ CTA: ${JSON.stringify(item.cta)}`;
                 placeholder={t.batchPh}
                 rows={4}
                 className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
-                style={{ background: '#0E0E17', border: '1px solid #2A2A3D', color: '#F5F4FA' }}
-                onFocus={(e) => { e.target.style.borderColor = '#00FFD6'; e.target.style.boxShadow = '0 0 0 3px rgba(0,255,214,0.15)'; }}
-                onBlur={(e) => { e.target.style.borderColor = '#2A2A3D'; e.target.style.boxShadow = 'none'; }}
+                style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
+                onFocus={(e) => { e.target.style.borderColor = '#D97757'; e.target.style.boxShadow = '0 0 0 3px rgba(217,119,87,0.15)'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#E4E1D6'; e.target.style.boxShadow = 'none'; }}
               />
             ) : (
               <textarea
@@ -361,23 +361,23 @@ CTA: ${JSON.stringify(item.cta)}`;
                 placeholder={t.postPh}
                 rows={3}
                 className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
-                style={{ background: '#0E0E17', border: '1px solid #2A2A3D', color: '#F5F4FA' }}
-                onFocus={(e) => { e.target.style.borderColor = '#00FFD6'; e.target.style.boxShadow = '0 0 0 3px rgba(0,255,214,0.15)'; }}
-                onBlur={(e) => { e.target.style.borderColor = '#2A2A3D'; e.target.style.boxShadow = 'none'; }}
+                style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
+                onFocus={(e) => { e.target.style.borderColor = '#D97757'; e.target.style.boxShadow = '0 0 0 3px rgba(217,119,87,0.15)'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#E4E1D6'; e.target.style.boxShadow = 'none'; }}
               />
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#B7B5C9' }}>{t.photoLabel}</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.photoLabel}</label>
             <label
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer"
-              style={{ background: '#0E0E17', border: '1px dashed #2A2A3D', color: '#8A889C' }}
+              style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
             >
               {photo ? (
                 <img src={photo} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
               ) : (
-                <span style={{ width: 32, height: 32, borderRadius: 6, background: '#1A1A26', flexShrink: 0 }} />
+                <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
               )}
               <span>{photo ? t.changePhoto : t.uploadPhoto}</span>
               <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
@@ -385,15 +385,15 @@ CTA: ${JSON.stringify(item.cta)}`;
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#B7B5C9' }}>{t.videoLabel}</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.videoLabel}</label>
             <label
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer"
-              style={{ background: '#0E0E17', border: '1px dashed #2A2A3D', color: '#8A889C' }}
+              style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
             >
               {video ? (
                 <video src={video} muted loop autoPlay playsInline style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
               ) : (
-                <span style={{ width: 32, height: 32, borderRadius: 6, background: '#1A1A26', flexShrink: 0 }} />
+                <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
               )}
               <span>{video ? t.changeVideo : t.uploadVideo}</span>
               <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
@@ -402,12 +402,12 @@ CTA: ${JSON.stringify(item.cta)}`;
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#B7B5C9' }}>{t.platformLabel}</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.platformLabel}</label>
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value)}
                 className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-                style={{ background: '#0E0E17', border: '1px solid #2A2A3D', color: '#F5F4FA' }}
+                style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
               >
                 <option value="instagram">Instagram</option>
                 <option value="tiktok">TikTok</option>
@@ -418,12 +418,12 @@ CTA: ${JSON.stringify(item.cta)}`;
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#B7B5C9' }}>{t.languageLabel}</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.languageLabel}</label>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
                 className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-                style={{ background: '#0E0E17', border: '1px solid #2A2A3D', color: '#F5F4FA' }}
+                style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
               >
                 {languages.map(l => (
                   <option key={l.code} value={l.code}>{l.label}</option>
@@ -433,21 +433,21 @@ CTA: ${JSON.stringify(item.cta)}`;
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: '#B7B5C9' }}>
+            <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: '#6B6659' }}>
               <input
                 type="checkbox"
                 checked={includeEmoji}
                 onChange={(e) => setIncludeEmoji(e.target.checked)}
-                style={{ accentColor: '#00FFD6' }}
+                style={{ accentColor: '#D97757' }}
               />
               {t.emojiToggle}
             </label>
-            <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid #2A2A3D' }}>
+            <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid #E4E1D6' }}>
               <button
                 type="button"
                 onClick={() => setLengthMode('short')}
                 className="text-xs px-3 py-1.5"
-                style={{ background: lengthMode === 'short' ? '#2A2A3D' : 'transparent', color: lengthMode === 'short' ? '#00FFD6' : '#8A889C' }}
+                style={{ background: lengthMode === 'short' ? '#E4E1D6' : 'transparent', color: lengthMode === 'short' ? '#D97757' : '#87837A' }}
               >
                 {t.lengthShort}
               </button>
@@ -455,32 +455,32 @@ CTA: ${JSON.stringify(item.cta)}`;
                 type="button"
                 onClick={() => setLengthMode('detailed')}
                 className="text-xs px-3 py-1.5"
-                style={{ background: lengthMode === 'detailed' ? '#2A2A3D' : 'transparent', color: lengthMode === 'detailed' ? '#00FFD6' : '#8A889C' }}
+                style={{ background: lengthMode === 'detailed' ? '#E4E1D6' : 'transparent', color: lengthMode === 'detailed' ? '#D97757' : '#87837A' }}
               >
                 {t.lengthDetailed}
               </button>
             </div>
           </div>
 
-          {error && <p className="text-sm" style={{ color: '#FF5C7A' }}>{error}</p>}
+          {error && <p className="text-sm" style={{ color: '#B34B3C' }}>{error}</p>}
 
           <button
             onClick={handleGenerate}
             disabled={loading}
             className="w-full font-medium py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2"
             style={{
-              background: loading ? '#2A2A3D' : 'linear-gradient(90deg, #00FFD6, #7C5CFF)',
-              color: loading ? '#8A889C' : '#0A0A12',
-              boxShadow: loading ? 'none' : '0 0 20px rgba(0,255,214,0.35)'
+              background: loading ? '#E4E1D6' : 'linear-gradient(90deg, #D97757, #BD5D3A)',
+              color: loading ? '#87837A' : '#F5F4EE',
+              boxShadow: loading ? 'none' : '0 0 20px rgba(217,119,87,0.25)'
             }}
           >
             {loading ? (
               <>
                 <span>{t.generating}</span>
                 <span style={{ display: 'inline-flex', gap: '3px' }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#8A889C', animation: 'pulseDot 1.2s ease-in-out infinite', animationDelay: '0s' }} />
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#8A889C', animation: 'pulseDot 1.2s ease-in-out infinite', animationDelay: '0.15s' }} />
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#8A889C', animation: 'pulseDot 1.2s ease-in-out infinite', animationDelay: '0.3s' }} />
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#87837A', animation: 'pulseDot 1.2s ease-in-out infinite', animationDelay: '0s' }} />
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#87837A', animation: 'pulseDot 1.2s ease-in-out infinite', animationDelay: '0.15s' }} />
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#87837A', animation: 'pulseDot 1.2s ease-in-out infinite', animationDelay: '0.3s' }} />
                 </span>
               </>
             ) : t.generate}
@@ -496,26 +496,26 @@ CTA: ${JSON.stringify(item.cta)}`;
               return (
                 <div key={idx} className="space-y-4">
                   {batchMode && (
-                    <p className="text-xs font-medium" style={{ color: '#7C9BFF' }}>{item.topic}</p>
+                    <p className="text-xs font-medium" style={{ color: '#A56A45' }}>{item.topic}</p>
                   )}
 
                   {!batchMode && (
                     <div>
-                      <h2 className="text-sm font-semibold mb-2" style={{ color: '#00FFD6' }}>{t.preview}</h2>
-                      <div className="rounded-xl p-4" style={{ background: '#13131D', border: '1px solid #2A2A3D' }}>
+                      <h2 className="text-sm font-semibold mb-2" style={{ color: '#D97757' }}>{t.preview}</h2>
+                      <div className="rounded-xl p-4" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6' }}>
                         <div className="flex items-center gap-2 mb-3">
-                          <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #00FFD6, #7C5CFF)', flexShrink: 0 }} />
-                          <span className="text-sm font-medium" style={{ color: '#F5F4FA' }}>{business || '—'}</span>
+                          <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #D97757, #BD5D3A)', flexShrink: 0 }} />
+                          <span className="text-sm font-medium" style={{ color: '#2D2A26' }}>{business || '—'}</span>
                         </div>
                         {photo ? (
                           <img src={photo} alt="" style={{ width: '100%', aspectRatio: '1.6 / 1', borderRadius: 10, objectFit: 'cover', marginBottom: 12 }} />
                         ) : (
-                          <div style={{ width: '100%', aspectRatio: '1.6 / 1', borderRadius: 10, background: 'linear-gradient(135deg, rgba(0,255,214,0.12), rgba(124,92,255,0.12))', marginBottom: 12 }} />
+                          <div style={{ width: '100%', aspectRatio: '1.6 / 1', borderRadius: 10, background: 'linear-gradient(135deg, rgba(217,119,87,0.10), rgba(189,93,58,0.10))', marginBottom: 12 }} />
                         )}
-                        <p className="text-sm mb-2" style={{ color: '#E4E3EF' }}>{display.captions[item.activeCaption]}</p>
+                        <p className="text-sm mb-2" style={{ color: '#3A362F' }}>{display.captions[item.activeCaption]}</p>
                         <div className="flex flex-wrap gap-1">
                           {display.hashtags.slice(0, 5).map((tag, i) => (
-                            <span key={i} className="text-xs" style={{ color: '#7C9BFF' }}>#{tag}</span>
+                            <span key={i} className="text-xs" style={{ color: '#A56A45' }}>#{tag}</span>
                           ))}
                         </div>
                       </div>
@@ -523,7 +523,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                   )}
 
                   <div>
-                    <h2 className="text-sm font-semibold mb-2" style={{ color: '#00FFD6' }}>{t.captionsHeading}</h2>
+                    <h2 className="text-sm font-semibold mb-2" style={{ color: '#D97757' }}>{t.captionsHeading}</h2>
                     <div className="space-y-2">
                       {display.captions.map((cap, i) => (
                         <div
@@ -531,16 +531,16 @@ CTA: ${JSON.stringify(item.cta)}`;
                           onClick={() => setResultActiveCaption(idx, i)}
                           className="rounded-lg p-3 flex items-start justify-between gap-3 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
                           style={{
-                            background: '#13131D',
-                            border: item.activeCaption === i ? '1px solid #00FFD6' : '1px solid #2A2A3D',
-                            boxShadow: item.activeCaption === i ? '0 6px 16px rgba(0,255,214,0.12)' : 'none'
+                            background: '#FFFFFF',
+                            border: item.activeCaption === i ? '1px solid #D97757' : '1px solid #E4E1D6',
+                            boxShadow: item.activeCaption === i ? '0 6px 16px rgba(217,119,87,0.10)' : 'none'
                           }}
                         >
-                          <p className="text-sm flex-1" style={{ color: '#E4E3EF' }}>{cap}</p>
+                          <p className="text-sm flex-1" style={{ color: '#3A362F' }}>{cap}</p>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleCopy(cap, `cap-${idx}-${i}`); }}
                             className="text-xs whitespace-nowrap flex-shrink-0"
-                            style={{ color: copied === `cap-${idx}-${i}` ? '#00FFD6' : '#7C5CFF' }}
+                            style={{ color: copied === `cap-${idx}-${i}` ? '#D97757' : '#BD5D3A' }}
                           >
                             {copied === `cap-${idx}-${i}` ? t.copied : t.copy}
                           </button>
@@ -551,13 +551,13 @@ CTA: ${JSON.stringify(item.cta)}`;
 
                   {display.cta && (
                     <div>
-                      <h2 className="text-sm font-semibold mb-2" style={{ color: '#00FFD6' }}>{t.ctaHeading}</h2>
-                      <div className="rounded-lg p-3 flex items-center justify-between gap-3" style={{ background: '#13131D', border: '1px solid #2A2A3D' }}>
-                        <p className="text-sm flex-1" style={{ color: '#E4E3EF' }}>{display.cta}</p>
+                      <h2 className="text-sm font-semibold mb-2" style={{ color: '#D97757' }}>{t.ctaHeading}</h2>
+                      <div className="rounded-lg p-3 flex items-center justify-between gap-3" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6' }}>
+                        <p className="text-sm flex-1" style={{ color: '#3A362F' }}>{display.cta}</p>
                         <button
                           onClick={() => handleCopy(display.cta, `cta-${idx}`)}
                           className="text-xs whitespace-nowrap flex-shrink-0"
-                          style={{ color: copied === `cta-${idx}` ? '#00FFD6' : '#7C5CFF' }}
+                          style={{ color: copied === `cta-${idx}` ? '#D97757' : '#BD5D3A' }}
                         >
                           {copied === `cta-${idx}` ? t.copied : t.copy}
                         </button>
@@ -566,17 +566,17 @@ CTA: ${JSON.stringify(item.cta)}`;
                   )}
 
                   <div>
-                    <h2 className="text-sm font-semibold mb-2" style={{ color: '#00FFD6' }}>{t.hashtagsHeading}</h2>
-                    <div className="rounded-lg p-3" style={{ background: '#13131D', border: '1px solid #2A2A3D' }}>
+                    <h2 className="text-sm font-semibold mb-2" style={{ color: '#D97757' }}>{t.hashtagsHeading}</h2>
+                    <div className="rounded-lg p-3" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6' }}>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {display.hashtags.map((tag, i) => (
-                          <span key={i} className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(124,92,255,0.15)', color: '#B7A9FF', border: '1px solid rgba(124,92,255,0.3)' }}>#{tag}</span>
+                          <span key={i} className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(189,93,58,0.12)', color: '#8B5A3E', border: '1px solid rgba(189,93,58,0.25)' }}>#{tag}</span>
                         ))}
                       </div>
                       <button
                         onClick={() => handleCopy(display.hashtags.map(h => `#${h}`).join(' '), `tags-${idx}`)}
                         className="text-xs"
-                        style={{ color: copied === `tags-${idx}` ? '#00FFD6' : '#7C5CFF' }}
+                        style={{ color: copied === `tags-${idx}` ? '#D97757' : '#BD5D3A' }}
                       >
                         {copied === `tags-${idx}` ? t.copied : t.copyAll}
                       </button>
@@ -588,7 +588,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                       <button
                         onClick={() => setActiveLang(idx, null)}
                         className="text-xs px-2 py-1 rounded-full"
-                        style={{ background: '#2A2A3D', color: '#F5F4FA' }}
+                        style={{ background: '#E4E1D6', color: '#2D2A26' }}
                       >
                         {currentLang.label}
                       </button>
@@ -601,8 +601,8 @@ CTA: ${JSON.stringify(item.cta)}`;
                           onClick={() => setActiveLang(idx, langCode)}
                           className="text-xs px-2 py-1 rounded-full"
                           style={{
-                            background: item.activeLang === langCode ? '#00FFD6' : '#2A2A3D',
-                            color: item.activeLang === langCode ? '#0A0A12' : '#F5F4FA'
+                            background: item.activeLang === langCode ? '#D97757' : '#E4E1D6',
+                            color: item.activeLang === langCode ? '#F5F4EE' : '#2D2A26'
                           }}
                         >
                           {lang ? lang.label : langCode}
@@ -613,7 +613,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                       onChange={(e) => { if (e.target.value) { handleTranslate(idx, e.target.value); e.target.value = ''; } }}
                       disabled={translatingIndex === idx}
                       className="text-xs rounded-full px-2 py-1 focus:outline-none"
-                      style={{ background: '#0E0E17', border: '1px solid #2A2A3D', color: '#8A889C' }}
+                      style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#87837A' }}
                       defaultValue=""
                     >
                       <option value="" disabled>{translatingIndex === idx ? '...' : `+ ${t.translateTo}`}</option>
@@ -630,23 +630,30 @@ CTA: ${JSON.stringify(item.cta)}`;
 
         {history.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-sm font-semibold mb-2" style={{ color: '#8A889C' }}>{t.historyHeading}</h2>
+            <h2 className="text-sm font-semibold mb-2" style={{ color: '#87837A' }}>{t.historyHeading}</h2>
             <div className="space-y-2">
               {history.map((item, i) => (
                 <div
                   key={i}
                   onClick={() => loadFromHistory(item)}
                   className="rounded-lg px-3 py-2 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
-                  style={{ background: '#13131D', border: '1px solid #2A2A3D' }}
+                  style={{ background: '#FFFFFF', border: '1px solid #E4E1D6' }}
                 >
-                  <p className="text-xs truncate" style={{ color: '#8A889C' }}>
-                    <span style={{ color: '#B7A9FF' }}>{item.business}</span> · {item.results[0]?.captions[0]}
+                  <p className="text-xs truncate" style={{ color: '#87837A' }}>
+                    <span style={{ color: '#8B5A3E' }}>{item.business}</span> · {item.results[0]?.captions[0]}
                   </p>
                 </div>
               ))}
             </div>
           </div>
         )}
+
+        <div className="flex items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: '1px solid #E4E1D6' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#87837A" strokeWidth="1.5">
+            <path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6L12 3z" />
+          </svg>
+          <span className="text-xs" style={{ color: '#87837A' }}>Powered by Claude</span>
+        </div>
       </div>
     </div>
   );
