@@ -4,7 +4,7 @@ export default function CaptionGenerator() {
   const [business, setBusiness] = useState('');
   const [postAbout, setPostAbout] = useState('');
   const [platform, setPlatform] = useState('instagram');
-  const [language, setLanguage] = useState('ru');
+  const [language, setLanguage] = useState('en');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState('');
@@ -249,6 +249,18 @@ CTA: ${JSON.stringify(item.cta)}`;
       <div className="min-h-screen flex items-center justify-center px-4" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#F5F4EE', fontFamily: bodyFont }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Cairo:wght@400;700&display=swap');`}</style>
         <div className="w-full max-w-sm rounded-xl p-6" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6' }}>
+          <div className="flex justify-end mb-3">
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="text-xs rounded-lg px-2 py-1 focus:outline-none"
+              style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#6B6659' }}
+            >
+              {languages.map(l => (
+                <option key={l.code} value={l.code}>{l.label}</option>
+              ))}
+            </select>
+          </div>
           <h1
             className="text-2xl mb-4 flex items-center gap-2"
             style={{ fontFamily: headingFont }}
