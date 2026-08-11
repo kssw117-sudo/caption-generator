@@ -6049,8 +6049,8 @@
   },
   {
     "code": "TAG-MP55-5EB7",
-    "redeemed": false,
-    "redeemed_at": null,
+    "redeemed": true,
+    "redeemed_at": "2026-08-11T16:17:44.017Z",
     "redeemed_email": null
   },
   {
