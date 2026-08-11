@@ -6055,8 +6055,8 @@
   },
   {
     "code": "TAG-2XUU-EBSZ",
-    "redeemed": false,
-    "redeemed_at": null,
+    "redeemed": true,
+    "redeemed_at": "2026-08-11T16:35:25.750Z",
     "redeemed_email": null
   }
 ]
