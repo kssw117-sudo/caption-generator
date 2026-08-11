@@ -1,6 +1,28 @@
 import React, { useState } from 'react';
 
 export default function CaptionGenerator() {
+  const DAILY_LIMIT = 50;
+  const LIMIT_STORAGE_KEY = 'tg_daily_gens';
+
+  function checkAndUseDailyLimit() {
+    const today = new Date().toISOString().slice(0, 10);
+    let record;
+    try {
+      record = JSON.parse(localStorage.getItem(LIMIT_STORAGE_KEY) || 'null');
+    } catch (e) {
+      record = null;
+    }
+    if (!record || record.date !== today) {
+      record = { date: today, count: 0 };
+    }
+    if (record.count >= DAILY_LIMIT) {
+      return false;
+    }
+    record.count += 1;
+    localStorage.setItem(LIMIT_STORAGE_KEY, JSON.stringify(record));
+    return true;
+  }
+
   const [business, setBusiness] = useState('');
   const [postAbout, setPostAbout] = useState('');
   const [platform, setPlatform] = useState('instagram');
@@ -46,8 +68,8 @@ export default function CaptionGenerator() {
   ];
 
   const ui = {
-    ru: { title: 'Генератор подписей и хэштегов', subtitle: 'Для постов малого бизнеса в Instagram, TikTok, WhatsApp', businessLabel: 'Название бизнеса', businessPh: 'Например: кофейня «Утро»', brandVoiceLabel: 'Голос бренда', brandVoicePh: 'Например: дружелюбный, с юмором', postLabel: 'О чём пост', postPh: 'Например: новое сезонное меню с тыквенным латте', platformLabel: 'Платформа', languageLabel: 'Язык', whatsappStatus: 'WhatsApp статус', generate: 'Сгенерировать', generating: 'Генерирую', fillError: 'Заполните название бизнеса и тему поста', genError: 'Не удалось сгенерировать. Попробуйте ещё раз.', captionsHeading: 'Варианты подписи', hashtagsHeading: 'Хэштеги', copy: 'Копировать', copied: 'Скопировано', copyAll: 'Копировать все хэштеги', preview: 'Предпросмотр', historyHeading: 'История', photoLabel: 'Фото (к нему теги)', uploadPhoto: 'Загрузить фото', changePhoto: 'Сменить фото', videoLabel: 'Видео (к нему теги)', uploadVideo: 'Загрузить видео', changeVideo: 'Сменить видео' , batchToggle: 'Пакетный режим', batchLabel: 'Темы (по одной на строку)', batchPh: 'кофе с собой\nновая коллекция\nчёрная пятница', emojiToggle: 'Эмодзи', lengthShort: 'Коротко', lengthDetailed: 'Развёрнуто', ctaHeading: 'Призыв к действию', translateTo: 'Перевести на', translateBtn: 'Перевести', licenseGateTitle: 'Введите код доступа', licensePh: 'Код доступа', unlockBtn: 'Разблокировать', licenseInvalid: 'Неверный или неактивный код', noCodeText: 'Нет кода? Купить доступ'},
-    en: { title: 'Caption & hashtag generator', subtitle: 'For small business posts on Instagram, TikTok, WhatsApp', businessLabel: 'Business name', businessPh: 'e.g. Morning Coffee Shop', brandVoiceLabel: 'Brand voice', brandVoicePh: 'e.g. friendly, playful', postLabel: 'What is the post about', postPh: 'e.g. new seasonal pumpkin latte menu', platformLabel: 'Platform', languageLabel: 'Language', whatsappStatus: 'WhatsApp status', generate: 'Generate', generating: 'Generating', fillError: 'Fill in business name and post topic', genError: 'Could not generate. Try again.', captionsHeading: 'Caption options', hashtagsHeading: 'Hashtags', copy: 'Copy', copied: 'Copied', copyAll: 'Copy all hashtags', preview: 'Preview', historyHeading: 'History', photoLabel: 'Photo (tags go with this)', uploadPhoto: 'Upload photo', changePhoto: 'Change photo', videoLabel: 'Video (tags go with this)', uploadVideo: 'Upload video', changeVideo: 'Change video' , batchToggle: 'Batch mode', batchLabel: 'Topics (one per line)', batchPh: 'coffee to go\nnew collection\nblack friday', emojiToggle: 'Emoji', lengthShort: 'Short', lengthDetailed: 'Detailed', ctaHeading: 'Call to action', translateTo: 'Translate to', translateBtn: 'Translate', licenseGateTitle: 'Enter your access code', licensePh: 'Access code', unlockBtn: 'Unlock', licenseInvalid: 'Invalid or inactive code', noCodeText: 'No code? Buy access'},
+    ru: { title: 'Генератор подписей и хэштегов', subtitle: 'Для постов малого бизнеса в Instagram, TikTok, WhatsApp', businessLabel: 'Название бизнеса', businessPh: 'Например: кофейня «Утро»', brandVoiceLabel: 'Голос бренда', brandVoicePh: 'Например: дружелюбный, с юмором', postLabel: 'О чём пост', postPh: 'Например: новое сезонное меню с тыквенным латте', platformLabel: 'Платформа', languageLabel: 'Язык', whatsappStatus: 'WhatsApp статус', generate: 'Сгенерировать', generating: 'Генерирую', fillError: 'Заполните название бизнеса и тему поста', genError: 'Не удалось сгенерировать. Попробуйте ещё раз.', limitReached: 'Достигнут дневной лимит генераций. Попробуйте завтра.', captionsHeading: 'Варианты подписи', hashtagsHeading: 'Хэштеги', copy: 'Копировать', copied: 'Скопировано', copyAll: 'Копировать все хэштеги', preview: 'Предпросмотр', historyHeading: 'История', photoLabel: 'Фото (к нему теги)', uploadPhoto: 'Загрузить фото', changePhoto: 'Сменить фото', videoLabel: 'Видео (к нему теги)', uploadVideo: 'Загрузить видео', changeVideo: 'Сменить видео' , batchToggle: 'Пакетный режим', batchLabel: 'Темы (по одной на строку)', batchPh: 'кофе с собой\nновая коллекция\nчёрная пятница', emojiToggle: 'Эмодзи', lengthShort: 'Коротко', lengthDetailed: 'Развёрнуто', ctaHeading: 'Призыв к действию', translateTo: 'Перевести на', translateBtn: 'Перевести', licenseGateTitle: 'Введите код доступа', licensePh: 'Код доступа', unlockBtn: 'Разблокировать', licenseInvalid: 'Неверный или неактивный код', noCodeText: 'Нет кода? Купить доступ'},
+    en: { title: 'Caption & hashtag generator', subtitle: 'For small business posts on Instagram, TikTok, WhatsApp', businessLabel: 'Business name', businessPh: 'e.g. Morning Coffee Shop', brandVoiceLabel: 'Brand voice', brandVoicePh: 'e.g. friendly, playful', postLabel: 'What is the post about', postPh: 'e.g. new seasonal pumpkin latte menu', platformLabel: 'Platform', languageLabel: 'Language', whatsappStatus: 'WhatsApp status', generate: 'Generate', generating: 'Generating', fillError: 'Fill in business name and post topic', genError: 'Could not generate. Try again.', limitReached: 'Daily generation limit reached. Try again tomorrow.', captionsHeading: 'Caption options', hashtagsHeading: 'Hashtags', copy: 'Copy', copied: 'Copied', copyAll: 'Copy all hashtags', preview: 'Preview', historyHeading: 'History', photoLabel: 'Photo (tags go with this)', uploadPhoto: 'Upload photo', changePhoto: 'Change photo', videoLabel: 'Video (tags go with this)', uploadVideo: 'Upload video', changeVideo: 'Change video' , batchToggle: 'Batch mode', batchLabel: 'Topics (one per line)', batchPh: 'coffee to go\nnew collection\nblack friday', emojiToggle: 'Emoji', lengthShort: 'Short', lengthDetailed: 'Detailed', ctaHeading: 'Call to action', translateTo: 'Translate to', translateBtn: 'Translate', licenseGateTitle: 'Enter your access code', licensePh: 'Access code', unlockBtn: 'Unlock', licenseInvalid: 'Invalid or inactive code', noCodeText: 'No code? Buy access'},
     ar: { title: 'مولد التعليقات والوسوم', subtitle: 'لمنشورات الأعمال الصغيرة على إنستغرام وتيك توك وواتساب', businessLabel: 'اسم النشاط التجاري', businessPh: 'مثال: مقهى الصباح', brandVoiceLabel: 'نبرة العلامة التجارية', brandVoicePh: 'مثال: ودود ومرح', postLabel: 'موضوع المنشور', postPh: 'مثال: قائمة اليقطين الموسمية الجديدة', platformLabel: 'المنصة', languageLabel: 'اللغة', whatsappStatus: 'حالة واتساب', generate: 'إنشاء', generating: 'جارٍ الإنشاء', fillError: 'يرجى إدخال اسم النشاط وموضوع المنشور', genError: 'تعذر الإنشاء. حاول مرة أخرى.', captionsHeading: 'خيارات التعليق', hashtagsHeading: 'الوسوم', copy: 'نسخ', copied: 'تم النسخ', copyAll: 'نسخ جميع الوسوم', preview: 'معاينة', historyHeading: 'السجل', photoLabel: 'الصورة (معها الوسوم)', uploadPhoto: 'رفع صورة', changePhoto: 'تغيير الصورة', videoLabel: 'الفيديو (معه الوسوم)', uploadVideo: 'رفع فيديو', changeVideo: 'تغيير الفيديو' , batchToggle: 'الوضع الجماعي', batchLabel: 'المواضيع (كل موضوع في سطر)', batchPh: 'قهوة للطريق\nمجموعة جديدة\nالجمعة السوداء', emojiToggle: 'الرموز التعبيرية', lengthShort: 'قصير', lengthDetailed: 'مفصل', ctaHeading: 'دعوة لاتخاذ إجراء', translateTo: 'ترجمة إلى', translateBtn: 'ترجمة', licenseGateTitle: 'أدخل رمز الوصول', licensePh: 'رمز الوصول', unlockBtn: 'فتح', licenseInvalid: 'رمز غير صالح أو غير مفعّل', noCodeText: 'لا يوجد رمز؟ شراء الوصول'},
     fa: { title: 'تولیدکننده کپشن و هشتگ', subtitle: 'برای پست‌های کسب‌وکارهای کوچک در اینستاگرام، تیک‌تاک، واتساپ', businessLabel: 'نام کسب‌وکار', businessPh: 'مثال: کافه صبح', brandVoiceLabel: 'لحن برند', brandVoicePh: 'مثال: دوستانه و بازیگوش', postLabel: 'موضوع پست چیست', postPh: 'مثال: منوی فصلی جدید لاته کدو تنبل', platformLabel: 'پلتفرم', languageLabel: 'زبان', whatsappStatus: 'وضعیت واتساپ', generate: 'ایجاد', generating: 'در حال ایجاد', fillError: 'نام کسب‌وکار و موضوع پست را پر کنید', genError: 'ایجاد نشد. دوباره امتحان کنید.', captionsHeading: 'گزینه‌های کپشن', hashtagsHeading: 'هشتگ‌ها', copy: 'کپی', copied: 'کپی شد', copyAll: 'کپی همه هشتگ‌ها', preview: 'پیش‌نمایش', historyHeading: 'تاریخچه', photoLabel: 'عکس (با تگ‌ها)', uploadPhoto: 'آپلود عکس', changePhoto: 'تغییر عکس', videoLabel: 'ویدیو (با تگ‌ها)', uploadVideo: 'آپلود ویدیو', changeVideo: 'تغییر ویدیو' , batchToggle: 'حالت دسته‌ای', batchLabel: 'موضوعات (هر خط یک موضوع)', batchPh: 'قهوه بیرون‌بر\nکالکشن جدید\nبلک فرایدی', emojiToggle: 'ایموجی', lengthShort: 'کوتاه', lengthDetailed: 'مفصل', ctaHeading: 'فراخوان اقدام', translateTo: 'ترجمه به', translateBtn: 'ترجمه', licenseGateTitle: 'کد دسترسی را وارد کنید', licensePh: 'کد دسترسی', unlockBtn: 'باز کردن', licenseInvalid: 'کد نامعتبر یا غیرفعال', noCodeText: 'کد ندارید؟ خرید دسترسی'},
     es: { title: 'Generador de textos y hashtags', subtitle: 'Para publicaciones de pequeños negocios en Instagram, TikTok, WhatsApp', businessLabel: 'Nombre del negocio', businessPh: 'Ej: Cafetería Mañana', brandVoiceLabel: 'Tono de marca', brandVoicePh: 'Ej: amigable y divertido', postLabel: 'Tema de la publicación', postPh: 'Ej: nuevo menú de temporada con latte de calabaza', platformLabel: 'Plataforma', languageLabel: 'Idioma', whatsappStatus: 'Estado de WhatsApp', generate: 'Generar', generating: 'Generando', fillError: 'Completa el nombre del negocio y el tema', genError: 'No se pudo generar. Intenta de nuevo.', captionsHeading: 'Opciones de texto', hashtagsHeading: 'Hashtags', copy: 'Copiar', copied: 'Copiado', copyAll: 'Copiar todos los hashtags', preview: 'Vista previa', historyHeading: 'Historial', photoLabel: 'Foto (con estas etiquetas)', uploadPhoto: 'Subir foto', changePhoto: 'Cambiar foto', videoLabel: 'Video (con estas etiquetas)', uploadVideo: 'Subir video', changeVideo: 'Cambiar video' , batchToggle: 'Modo por lotes', batchLabel: 'Temas (uno por línea)', batchPh: 'café para llevar\nnueva colección\nblack friday', emojiToggle: 'Emoji', lengthShort: 'Corto', lengthDetailed: 'Detallado', ctaHeading: 'Llamada a la acción', translateTo: 'Traducir a', translateBtn: 'Traducir', licenseGateTitle: 'Introduce tu código de acceso', licensePh: 'Código de acceso', unlockBtn: 'Desbloquear', licenseInvalid: 'Código inválido o inactivo', noCodeText: '¿Sin código? Comprar acceso'},
@@ -89,6 +111,9 @@ export default function CaptionGenerator() {
   };
 
   async function generateOne(topic) {
+    if (!checkAndUseDailyLimit()) {
+      throw new Error('limit');
+    }
     const platformName = platformNames[platform] || 'Instagram';
     const langInstruction = currentLang.englishName;
     const voiceInstruction = brandVoice.trim()
@@ -157,6 +182,8 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
       if (err.message === 'license') {
         setUnlocked(false);
         setLicenseError(t.licenseInvalid);
+      } else if (err.message === 'limit') {
+        setError(t.limitReached || 'Daily generation limit reached. Try again tomorrow.');
       } else {
         setError(t.genError);
       }
@@ -170,6 +197,11 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     if (!item) return;
     const targetLang = languages.find(l => l.code === targetLangCode);
     if (!targetLang) return;
+
+    if (!checkAndUseDailyLimit()) {
+      setError(t.limitReached || 'Daily generation limit reached. Try again tomorrow.');
+      return;
+    }
 
     setTranslatingIndex(index);
     const prompt = `Translate the following social media captions, hashtags, and call-to-action into ${targetLang.englishName}, keeping the same tone and meaning. Respond ONLY with valid JSON, no markdown: {"captions": ["...", "...", "..."], "hashtags": ["...", ...], "cta": "..."}
@@ -694,11 +726,14 @@ CTA: ${JSON.stringify(item.cta)}`;
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: '1px solid #E4E1D6' }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#87837A" strokeWidth="1.5">
-            <path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6L12 3z" />
-          </svg>
-          <span className="text-xs" style={{ color: '#87837A' }}>Powered by Claude</span>
+        <div className="flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: '1px solid #E4E1D6' }}>
+          <div className="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#87837A" strokeWidth="1.5">
+              <path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6L12 3z" />
+            </svg>
+            <span className="text-xs" style={{ color: '#87837A' }}>Powered by Claude</span>
+          </div>
+          <span className="text-xs" style={{ color: '#B5B0A3' }}>Fair use: up to 50 generations per day</span>
         </div>
       </div>
     </div>
