@@ -1,7 +1,9 @@
 // api/generate.js
-// Никакой базы данных. Код доступа один общий для всех, хранится
-// в переменной окружения ACCESS_CODE на Vercel. Меняете его там же,
-// если понадобится (например, если код "утёк").
+// Принимает два типа кодов:
+// 1. Общий код с Getly, хранится в переменной окружения ACCESS_CODE
+// 2. Уникальные AppSumo-коды вида TAG-XXXX-XXXX (сами коды проверяются
+//    и гасятся отдельной функцией /api/redeem-appsumo при разблокировке;
+//    здесь просто пропускаем любой код с этим префиксом)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -10,7 +12,10 @@ export default async function handler(req, res) {
 
   const { licenseCode, prompt } = req.body;
 
-  if (!licenseCode || licenseCode !== process.env.ACCESS_CODE) {
+  const isSharedCode = licenseCode && licenseCode === process.env.ACCESS_CODE;
+  const isAppSumoCode = licenseCode && licenseCode.trim().toUpperCase().startsWith('TAG-');
+
+  if (!licenseCode || (!isSharedCode && !isAppSumoCode)) {
     return res.status(403).json({ error: 'Неверный код доступа' });
   }
 
