@@ -41,6 +41,7 @@ export default function CaptionGenerator() {
   const [results, setResults] = useState([]);
   const [translatingIndex, setTranslatingIndex] = useState(null);
   const [licenseCode, setLicenseCode] = useState(() => localStorage.getItem('tg_licenseCode') || '');
+  const [showSupportEmail, setShowSupportEmail] = useState(false);
   const [unlocked, setUnlocked] = useState(() => localStorage.getItem('tg_unlocked') === 'true');
   const [licenseError, setLicenseError] = useState('');
 
@@ -734,6 +735,21 @@ CTA: ${JSON.stringify(item.cta)}`;
             <span className="text-xs" style={{ color: '#87837A' }}>Powered by Claude</span>
           </div>
           <span className="text-xs" style={{ color: '#B5B0A3' }}>Fair use: up to 50 generations per day</span>
+          <div className="mt-1">
+            {!showSupportEmail ? (
+              <button
+                onClick={() => setShowSupportEmail(true)}
+                className="text-xs"
+                style={{ color: '#A56A45', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Support
+              </button>
+            ) : (
+              <a href="mailto:kssw117@gmail.com" className="text-xs" style={{ color: '#A56A45' }}>
+                kssw117@gmail.com
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
