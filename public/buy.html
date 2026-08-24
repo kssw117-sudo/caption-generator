@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Купить доступ</title>
+<title>Купить доступ &mdash; TagGenerator AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -11,113 +11,40 @@
     margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
     background: #F5F4EE; color: #2D2A26; font-family: -apple-system, sans-serif; padding: 24px;
   }
-  .wrap { max-width: 480px; width: 100%; }
-  h1 { font-size: 24px; text-align: center; margin-bottom: 32px; font-family: 'Fraunces', serif; }
-  [dir="rtl"] h1, [dir="rtl"] body { font-family: 'Cairo', sans-serif; }
-  .plans { display: grid; gap: 16px; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .wrap { max-width: 480px; width: 100%; text-align: center; animation: fadeUp 0.6s ease both; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A56A45; margin-bottom: 14px; }
+  h1 { font-size: 28px; margin: 0 0 16px; font-family: 'Fraunces', serif; }
+  .sub { color: #87837A; font-size: 15px; max-width: 400px; margin: 0 auto 32px; }
   .plan {
-    background: #FFFFFF; border: 1px solid #E4E1D6; border-radius: 14px; padding: 24px;
-    display: flex; flex-direction: column; gap: 8px;
+    background: #FFFFFF; border: 1px solid #E4E1D6; border-radius: 14px; padding: 32px 24px;
+    animation: fadeUp 0.6s ease both; animation-delay: 0.1s;
   }
-  .plan .name { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #A56A45; }
-  [dir="rtl"] .plan .name { text-transform: none; }
-  .plan .price { font-size: 28px; font-weight: 700; }
-  .plan .price span { font-size: 14px; color: #87837A; font-weight: 400; }
-  .plan button {
-    display: block; width: 100%; text-align: center; text-decoration: none; border: none; cursor: pointer;
-    border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 600;
+  .price { font-size: 38px; font-weight: 700; margin-bottom: 4px; }
+  .price-note { color: #87837A; font-size: 13px; margin-bottom: 24px; }
+  a.buy-btn {
+    display: inline-block; width: 100%; box-sizing: border-box; text-align: center; text-decoration: none;
+    border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 600;
     background: #D97757; color: #FFFFFF;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .plan button:disabled { opacity: 0.5; cursor: default; }
-  .error { color: #B34B3C; font-size: 13px; text-align: center; margin-top: 16px; }
+  a.buy-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217,119,87,0.35); }
+  a.buy-btn:active { transform: translateY(0); }
 </style>
 </head>
 <body>
 
 <div class="wrap">
-  <h1 id="pageTitle">Выберите доступ</h1>
-  <div class="plans">
-    <div class="plan">
-      <div class="name" id="plan1Name">Разовая покупка</div>
-      <div class="price">$29 <span id="plan1Period">навсегда</span></div>
-      <button id="plan1Btn" onclick="buy('lifetime', this)">Купить</button>
-    </div>
+  <div class="eyebrow">AI-powered &middot; Instant access</div>
+  <h1>TagGenerator AI</h1>
+  <p class="sub">Turn any post idea into captions and hashtags in seconds &mdash; 20 languages, batch mode, platform-specific formatting.</p>
 
-    <div class="plan">
-      <div class="name" id="plan2Name">На 30 дней</div>
-      <div class="price">$9 <span id="plan2Period">/ месяц</span></div>
-      <button id="plan2Btn" onclick="buy('monthly', this)">Купить</button>
-    </div>
+  <div class="plan">
+    <div class="price">$29</div>
+    <div class="price-note">one-time payment &middot; lifetime access &middot; secure card payment</div>
+    <a class="buy-btn" href="https://app.lava.top/products/e9a04c33-8882-432e-bf2d-4a559972a885" target="_blank" rel="noopener">Buy now</a>
   </div>
-  <p class="error" id="errorMsg" style="display:none;"></p>
 </div>
-
-<script>
-  const translations = {
-    ru: { pageTitle: 'Выберите доступ', plan1Name: 'Разовая покупка', plan1Period: 'навсегда', plan2Name: 'На 30 дней', plan2Period: '/ месяц', btn: 'Купить', preparing: 'Готовим оплату...', error: 'Ошибка: ', rtl: false },
-    en: { pageTitle: 'Choose your access', plan1Name: 'One-time purchase', plan1Period: 'forever', plan2Name: '30-day access', plan2Period: '/ month', btn: 'Buy', preparing: 'Preparing payment...', error: 'Error: ', rtl: false },
-    ar: { pageTitle: 'اختر خطتك', plan1Name: 'شراء لمرة واحدة', plan1Period: 'للأبد', plan2Name: 'وصول لمدة 30 يومًا', plan2Period: '/ شهر', btn: 'شراء', preparing: 'جارٍ تجهيز الدفع...', error: 'خطأ: ', rtl: true },
-    fa: { pageTitle: 'دسترسی خود را انتخاب کنید', plan1Name: 'خرید یکباره', plan1Period: 'برای همیشه', plan2Name: 'دسترسی ۳۰ روزه', plan2Period: '/ ماه', btn: 'خرید', preparing: 'در حال آماده‌سازی پرداخت...', error: 'خطا: ', rtl: true },
-    es: { pageTitle: 'Elige tu acceso', plan1Name: 'Compra única', plan1Period: 'para siempre', plan2Name: 'Acceso de 30 días', plan2Period: '/ mes', btn: 'Comprar', preparing: 'Preparando el pago...', error: 'Error: ', rtl: false },
-    fr: { pageTitle: 'Choisissez votre accès', plan1Name: 'Achat unique', plan1Period: 'pour toujours', plan2Name: 'Accès 30 jours', plan2Period: '/ mois', btn: 'Acheter', preparing: 'Préparation du paiement...', error: 'Erreur : ', rtl: false },
-    de: { pageTitle: 'Zugang wählen', plan1Name: 'Einmalkauf', plan1Period: 'für immer', plan2Name: '30-Tage-Zugang', plan2Period: '/ Monat', btn: 'Kaufen', preparing: 'Zahlung wird vorbereitet...', error: 'Fehler: ', rtl: false },
-    it: { pageTitle: 'Scegli il tuo accesso', plan1Name: 'Acquisto unico', plan1Period: 'per sempre', plan2Name: 'Accesso 30 giorni', plan2Period: '/ mese', btn: 'Acquista', preparing: 'Preparazione pagamento...', error: 'Errore: ', rtl: false },
-    pt: { pageTitle: 'Escolha seu acesso', plan1Name: 'Compra única', plan1Period: 'para sempre', plan2Name: 'Acesso de 30 dias', plan2Period: '/ mês', btn: 'Comprar', preparing: 'Preparando pagamento...', error: 'Erro: ', rtl: false },
-    tr: { pageTitle: 'Erişiminizi seçin', plan1Name: 'Tek seferlik satın alma', plan1Period: 'süresiz', plan2Name: '30 günlük erişim', plan2Period: '/ ay', btn: 'Satın al', preparing: 'Ödeme hazırlanıyor...', error: 'Hata: ', rtl: false },
-    zh: { pageTitle: '选择访问方案', plan1Name: '一次性购买', plan1Period: '永久', plan2Name: '30天访问', plan2Period: '/ 月', btn: '购买', preparing: '正在准备付款...', error: '错误：', rtl: false },
-    hi: { pageTitle: 'अपनी पहुंच चुनें', plan1Name: 'एकमुश्त खरीद', plan1Period: 'हमेशा के लिए', plan2Name: '30-दिन एक्सेस', plan2Period: '/ माह', btn: 'खरीदें', preparing: 'भुगतान तैयार हो रहा है...', error: 'त्रुटि: ', rtl: false },
-    ja: { pageTitle: 'プランを選択', plan1Name: '買い切り', plan1Period: '永久', plan2Name: '30日間アクセス', plan2Period: '/ 月', btn: '購入', preparing: '支払いを準備中...', error: 'エラー: ', rtl: false },
-    sv: { pageTitle: 'Välj din åtkomst', plan1Name: 'Engångsköp', plan1Period: 'för alltid', plan2Name: '30 dagars åtkomst', plan2Period: '/ månad', btn: 'Köp', preparing: 'Förbereder betalning...', error: 'Fel: ', rtl: false },
-    no: { pageTitle: 'Velg tilgangen din', plan1Name: 'Engangskjøp', plan1Period: 'for alltid', plan2Name: '30 dagers tilgang', plan2Period: '/ måned', btn: 'Kjøp', preparing: 'Forbereder betaling...', error: 'Feil: ', rtl: false },
-    da: { pageTitle: 'Vælg din adgang', plan1Name: 'Engangskøb', plan1Period: 'for evigt', plan2Name: '30 dages adgang', plan2Period: '/ måned', btn: 'Køb', preparing: 'Forbereder betaling...', error: 'Fejl: ', rtl: false },
-    fi: { pageTitle: 'Valitse käyttöoikeutesi', plan1Name: 'Kertaostos', plan1Period: 'ikuisesti', plan2Name: '30 päivän käyttöoikeus', plan2Period: '/ kk', btn: 'Osta', preparing: 'Valmistellaan maksua...', error: 'Virhe: ', rtl: false },
-    uk: { pageTitle: 'Оберіть доступ', plan1Name: 'Разова покупка', plan1Period: 'назавжди', plan2Name: 'Доступ на 30 днів', plan2Period: '/ місяць', btn: 'Купити', preparing: 'Готуємо оплату...', error: 'Помилка: ', rtl: false },
-    be: { pageTitle: 'Абярыце доступ', plan1Name: 'Аднаразовая пакупка', plan1Period: 'назаўжды', plan2Name: 'Доступ на 30 дзён', plan2Period: '/ месяц', btn: 'Купіць', preparing: 'Рыхтуем аплату...', error: 'Памылка: ', rtl: false },
-    el: { pageTitle: 'Επιλέξτε πρόσβαση', plan1Name: 'Εφάπαξ αγορά', plan1Period: 'για πάντα', plan2Name: 'Πρόσβαση 30 ημερών', plan2Period: '/ μήνα', btn: 'Αγορά', preparing: 'Προετοιμασία πληρωμής...', error: 'Σφάλμα: ', rtl: false }
-  };
-
-  const browserLang = (navigator.language || 'ru').slice(0, 2).toLowerCase();
-  const t = translations[browserLang] || translations.en;
-  let currentPlanBtnText = t.btn;
-
-  document.getElementById('htmlRoot').setAttribute('lang', browserLang);
-  if (t.rtl) document.getElementById('htmlRoot').setAttribute('dir', 'rtl');
-
-  document.getElementById('pageTitle').textContent = t.pageTitle;
-  document.getElementById('plan1Name').textContent = t.plan1Name;
-  document.getElementById('plan1Period').textContent = t.plan1Period;
-  document.getElementById('plan2Name').textContent = t.plan2Name;
-  document.getElementById('plan2Period').textContent = t.plan2Period;
-  document.getElementById('plan1Btn').textContent = t.btn;
-  document.getElementById('plan2Btn').textContent = t.btn;
-
-  async function buy(plan, btn) {
-    btn.disabled = true;
-    btn.textContent = t.preparing;
-    const errorMsg = document.getElementById('errorMsg');
-    errorMsg.style.display = 'none';
-
-    try {
-      const res = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan })
-      });
-      const data = await res.json();
-
-      if (data.paymentUrl) {
-        window.location.href = data.paymentUrl;
-      } else {
-        throw new Error(data.error || 'Error');
-      }
-    } catch (err) {
-      errorMsg.textContent = t.error + (err.message || '');
-      errorMsg.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = t.btn;
-    }
-  }
-</script>
 
 </body>
 </html>
