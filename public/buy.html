@@ -10,9 +10,23 @@
   body {
     margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
     background: #F5F4EE; color: #2D2A26; font-family: -apple-system, sans-serif; padding: 24px;
+    position: relative; overflow: hidden;
   }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-  .wrap { max-width: 480px; width: 100%; text-align: center; animation: fadeUp 0.6s ease both; }
+  @keyframes floatTag {
+    0%   { transform: translate(0, 0) rotate(-8deg); }
+    50%  { transform: translate(14px, -22px) rotate(4deg); }
+    100% { transform: translate(0, 0) rotate(-8deg); }
+  }
+  .floating-hash {
+    position: absolute; font-family: 'Fraunces', serif; font-weight: 700;
+    color: rgba(217,119,87,0.16); pointer-events: none; user-select: none;
+    animation: floatTag 7s ease-in-out infinite;
+  }
+  .floating-hash.h1 { font-size: 180px; top: 6%; left: 4%; animation-duration: 8s; }
+  .floating-hash.h2 { font-size: 90px; bottom: 8%; right: 8%; animation-duration: 6s; animation-delay: -2s; color: rgba(217,119,87,0.12); }
+  .floating-hash.h3 { font-size: 60px; top: 55%; right: 15%; animation-duration: 9s; animation-delay: -4s; color: rgba(217,119,87,0.1); }
+  .wrap { max-width: 480px; width: 100%; text-align: center; animation: fadeUp 0.6s ease both; position: relative; z-index: 1; }
   .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A56A45; margin-bottom: 14px; }
   h1 { font-size: 28px; margin: 0 0 16px; font-family: 'Fraunces', serif; }
   .sub { color: #87837A; font-size: 15px; max-width: 400px; margin: 0 auto 32px; }
@@ -28,6 +42,10 @@
 </style>
 </head>
 <body>
+
+<span class="floating-hash h1">#</span>
+<span class="floating-hash h2">#</span>
+<span class="floating-hash h3">#</span>
 
 <div class="wrap">
   <div class="eyebrow">AI-powered &middot; Instant access</div>
