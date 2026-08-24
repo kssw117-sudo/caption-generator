@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ru" id="htmlRoot">
+<html lang="en" id="htmlRoot">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Купить доступ &mdash; TagGenerator AI</title>
+<title>TagGenerator AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
 <style>
   body {
-    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: #F5F4EE; color: #2D2A26; font-family: -apple-system, sans-serif; padding: 24px;
-    position: relative; overflow: hidden;
+    margin: 0; background: #F5F4EE; color: #2D2A26;
+    font-family: -apple-system, sans-serif; line-height: 1.6;
+    position: relative; overflow-x: hidden;
   }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes floatTag {
@@ -23,22 +23,39 @@
     color: rgba(217,119,87,0.16); pointer-events: none; user-select: none;
     animation: floatTag 7s ease-in-out infinite;
   }
-  .floating-hash.h1 { font-size: 180px; top: 6%; left: 4%; animation-duration: 8s; }
-  .floating-hash.h2 { font-size: 90px; bottom: 8%; right: 8%; animation-duration: 6s; animation-delay: -2s; color: rgba(217,119,87,0.12); }
-  .floating-hash.h3 { font-size: 60px; top: 55%; right: 15%; animation-duration: 9s; animation-delay: -4s; color: rgba(217,119,87,0.1); }
-  .wrap { max-width: 480px; width: 100%; text-align: center; animation: fadeUp 0.6s ease both; position: relative; z-index: 1; }
-  .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A56A45; margin-bottom: 14px; }
-  h1 { font-size: 28px; margin: 0 0 16px; font-family: 'Fraunces', serif; }
-  .sub { color: #87837A; font-size: 15px; max-width: 400px; margin: 0 auto 32px; }
-  .plan {
-    background: #FFFFFF; border: 1px solid #E4E1D6; border-radius: 14px; padding: 32px 24px;
-    animation: fadeUp 0.6s ease both; animation-delay: 0.1s;
+  .floating-hash.h1 { font-size: 180px; top: 4%; left: 4%; animation-duration: 8s; }
+  .floating-hash.h2 { font-size: 90px; bottom: 6%; right: 6%; animation-duration: 6s; animation-delay: -2s; color: rgba(217,119,87,0.12); }
+  .floating-hash.h3 { font-size: 60px; top: 50%; right: 12%; animation-duration: 9s; animation-delay: -4s; color: rgba(217,119,87,0.1); }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 60px 24px 100px; position: relative; z-index: 1; }
+  .eyebrow { text-align: center; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A56A45; margin-bottom: 14px; animation: fadeUp 0.5s ease both; }
+  h1 { font-family: 'Fraunces', serif; font-size: 34px; text-align: center; margin: 0 0 16px; line-height: 1.2; animation: fadeUp 0.5s ease both; animation-delay: 0.05s; }
+  .sub { text-align: center; color: #87837A; font-size: 16px; max-width: 460px; margin: 0 auto 36px; animation: fadeUp 0.5s ease both; animation-delay: 0.1s; }
+  .price-box {
+    background: #FFFFFF; border: 1px solid #E4E1D6; border-radius: 16px;
+    padding: 32px; text-align: center; margin-bottom: 40px;
+    animation: fadeUp 0.5s ease both; animation-delay: 0.15s;
   }
-  .price { font-size: 38px; font-weight: 700; margin-bottom: 4px; }
+  .price { font-size: 42px; font-weight: 700; margin-bottom: 4px; }
   .price-note { color: #87837A; font-size: 13px; margin-bottom: 24px; }
   .widget-wrap { display: flex; justify-content: center; }
   .widget-wrap iframe { transition: transform 0.15s ease, box-shadow 0.15s ease; border-radius: 10px; }
   .widget-wrap iframe:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217,119,87,0.35); }
+  .features { margin: 40px 0; }
+  .feature {
+    display: flex; gap: 14px; margin-bottom: 20px; align-items: flex-start;
+    opacity: 0; animation: fadeUp 0.5s ease both;
+  }
+  .feature:nth-child(1) { animation-delay: 0.2s; }
+  .feature:nth-child(2) { animation-delay: 0.26s; }
+  .feature:nth-child(3) { animation-delay: 0.32s; }
+  .feature:nth-child(4) { animation-delay: 0.38s; }
+  .feature:nth-child(5) { animation-delay: 0.44s; }
+  .feature:nth-child(6) { animation-delay: 0.5s; }
+  .feature .dot { width: 6px; height: 6px; border-radius: 50%; background: #D97757; margin-top: 8px; flex-shrink: 0; }
+  .feature p { margin: 0; }
+  .feature strong { display: block; margin-bottom: 2px; }
+  footer { text-align: center; color: #87837A; font-size: 12px; margin-top: 60px; }
 </style>
 </head>
 <body>
@@ -50,15 +67,45 @@
 <div class="wrap">
   <div class="eyebrow">AI-powered &middot; Instant access</div>
   <h1>TagGenerator AI</h1>
-  <p class="sub">Turn any post idea into captions and hashtags in seconds &mdash; 20 languages, batch mode, platform-specific formatting.</p>
+  <p class="sub">Turn any post idea into captions and hashtags in seconds -- 20 languages, batch mode, platform-specific formatting.</p>
 
-  <div class="plan">
+  <div class="price-box">
     <div class="price">$29</div>
     <div class="price-note">one-time payment &middot; lifetime access &middot; secure card payment</div>
     <div class="widget-wrap">
       <iframe title="lava.top" style="border: none" width="250" height="80" src="https://widget.lava.top/34206317-4a91-41e0-b58c-1335c6f16a4b"></iframe>
     </div>
+    <div class="note" style="font-size:12px;color:#A56A45;margin-top:16px;">Instant delivery -- your access code arrives right after payment.</div>
   </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>3 caption options per generation</strong>Not one fixed answer -- pick the version that fits your voice best.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Attach a photo or video</strong>The AI looks at what's actually in the image and writes a caption that references it, not a generic template.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Adjustable brand voice</strong>Playful, professional, warm, bold -- describe your tone once and every caption matches it.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Batch mode</strong>Plan a whole week of posts in one click instead of writing captions one at a time.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>Platform-specific formatting</strong>Instagram, TikTok, WhatsApp status, YouTube Shorts, Twitter/X, and Pinterest -- each with the right length and tone.</p>
+    </div>
+    <div class="feature">
+      <div class="dot"></div>
+      <p><strong>20 languages</strong>Including full right-to-left support for Arabic and Persian.</p>
+    </div>
+  </div>
+
+  <footer>Plainwork &middot; a tool by Ksenia</footer>
 </div>
 
 </body>
