@@ -22,14 +22,9 @@
   }
   .price { font-size: 38px; font-weight: 700; margin-bottom: 4px; }
   .price-note { color: #87837A; font-size: 13px; margin-bottom: 24px; }
-  a.buy-btn {
-    display: inline-block; width: 100%; box-sizing: border-box; text-align: center; text-decoration: none;
-    border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 600;
-    background: #D97757; color: #FFFFFF;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-  a.buy-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217,119,87,0.35); }
-  a.buy-btn:active { transform: translateY(0); }
+  .widget-wrap { display: flex; justify-content: center; }
+  .widget-wrap iframe { transition: transform 0.15s ease, box-shadow 0.15s ease; border-radius: 10px; }
+  .widget-wrap iframe:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217,119,87,0.35); }
 </style>
 </head>
 <body>
@@ -42,7 +37,9 @@
   <div class="plan">
     <div class="price">$29</div>
     <div class="price-note">one-time payment &middot; lifetime access &middot; secure card payment</div>
-    <a class="buy-btn" href="https://app.lava.top/products/e9a04c33-8882-432e-bf2d-4a559972a885" target="_blank" rel="noopener">Buy now</a>
+    <div class="widget-wrap">
+      <iframe title="lava.top" style="border: none" width="250" height="80" src="https://widget.lava.top/34206317-4a91-41e0-b58c-1335c6f16a4b"></iframe>
+    </div>
   </div>
 </div>
 
