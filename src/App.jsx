@@ -4,6 +4,18 @@ export default function CaptionGenerator() {
   const DAILY_LIMIT = 50;
   const LIMIT_STORAGE_KEY = 'tg_daily_gens';
 
+  function getDailyCount() {
+    const today = new Date().toISOString().slice(0, 10);
+    let record;
+    try {
+      record = JSON.parse(localStorage.getItem(LIMIT_STORAGE_KEY) || 'null');
+    } catch (e) {
+      record = null;
+    }
+    if (!record || record.date !== today) return 0;
+    return record.count;
+  }
+
   function checkAndUseDailyLimit() {
     const today = new Date().toISOString().slice(0, 10);
     let record;
@@ -24,6 +36,7 @@ export default function CaptionGenerator() {
   }
 
   const [business, setBusiness] = useState('');
+  const [dailyCount, setDailyCount] = useState(() => getDailyCount());
   const [postAbout, setPostAbout] = useState('');
   const [platform, setPlatform] = useState('instagram');
   const [language, setLanguage] = useState('en');
@@ -113,8 +126,10 @@ export default function CaptionGenerator() {
 
   async function generateOne(topic) {
     if (!checkAndUseDailyLimit()) {
+      setDailyCount(DAILY_LIMIT);
       throw new Error('limit');
     }
+    setDailyCount(getDailyCount());
     const platformName = platformNames[platform] || 'Instagram';
     const langInstruction = currentLang.englishName;
     const voiceInstruction = brandVoice.trim()
@@ -200,9 +215,11 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     if (!targetLang) return;
 
     if (!checkAndUseDailyLimit()) {
+      setDailyCount(DAILY_LIMIT);
       setError(t.limitReached || 'Daily generation limit reached. Try again tomorrow.');
       return;
     }
+    setDailyCount(getDailyCount());
 
     setTranslatingIndex(index);
     const prompt = `Translate the following social media captions, hashtags, and call-to-action into ${targetLang.englishName}, keeping the same tone and meaning. Respond ONLY with valid JSON, no markdown: {"captions": ["...", "...", "..."], "hashtags": ["...", ...], "cta": "..."}
@@ -727,6 +744,23 @@ CTA: ${JSON.stringify(item.cta)}`;
           </div>
         )}
 
+        <div style={{ maxWidth: 480, margin: '0 auto 16px' }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
+            <span className="text-xs" style={{ color: '#87837A' }}>Today's free generations</span>
+            <span className="text-xs" style={{ color: '#87837A', fontWeight: 600 }}>{DAILY_LIMIT - dailyCount}/{DAILY_LIMIT} left</span>
+          </div>
+          <div style={{ height: 4, borderRadius: 999, background: '#E4E1D6', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 999, width: `${(dailyCount / DAILY_LIMIT) * 100}%`,
+              background: dailyCount >= DAILY_LIMIT ? '#B34B3C' : '#D97757',
+              transition: 'width 0.3s ease',
+            }} />
+          </div>
+          {dailyCount >= DAILY_LIMIT && (
+            <p className="text-xs text-center" style={{ color: '#B34B3C', marginTop: 8 }}>Today's limit reached — come back tomorrow for 50 more free generations.</p>
+          )}
+        </div>
+
         <div className="flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: '1px solid #E4E1D6' }}>
           <div className="flex items-center gap-1.5">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#87837A" strokeWidth="1.5">
@@ -734,7 +768,6 @@ CTA: ${JSON.stringify(item.cta)}`;
             </svg>
             <span className="text-xs" style={{ color: '#87837A' }}>Powered by Claude</span>
           </div>
-          <span className="text-xs" style={{ color: '#B5B0A3' }}>Fair use: up to 50 generations per day</span>
           <div className="mt-1">
             {!showSupportEmail ? (
               <button
