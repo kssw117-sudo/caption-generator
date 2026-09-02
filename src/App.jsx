@@ -56,6 +56,7 @@ export default function CaptionGenerator() {
   const [licenseCode, setLicenseCode] = useState(() => localStorage.getItem('tg_licenseCode') || '');
   const [showSupportEmail, setShowSupportEmail] = useState(false);
   const [unlocked, setUnlocked] = useState(() => localStorage.getItem('tg_unlocked') === 'true');
+  const [freeTrialUsed, setFreeTrialUsed] = useState(() => localStorage.getItem('tg_free_trial_used') === 'true');
   const [licenseError, setLicenseError] = useState('');
 
   const languages = [
@@ -125,11 +126,17 @@ export default function CaptionGenerator() {
   };
 
   async function generateOne(topic) {
-    if (!checkAndUseDailyLimit()) {
-      setDailyCount(DAILY_LIMIT);
-      throw new Error('limit');
+    const isTrial = !unlocked && !freeTrialUsed;
+    if (!unlocked && freeTrialUsed) {
+      throw new Error('license');
     }
-    setDailyCount(getDailyCount());
+    if (!isTrial) {
+      if (!checkAndUseDailyLimit()) {
+        setDailyCount(DAILY_LIMIT);
+        throw new Error('limit');
+      }
+      setDailyCount(getDailyCount());
+    }
     const platformName = platformNames[platform] || 'Instagram';
     const langInstruction = currentLang.englishName;
     const voiceInstruction = brandVoice.trim()
@@ -148,11 +155,16 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     const response = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ licenseCode, prompt })
+      body: JSON.stringify({ licenseCode, prompt, trial: isTrial })
     });
 
     if (response.status === 403) {
       throw new Error('license');
+    }
+
+    if (isTrial) {
+      localStorage.setItem('tg_free_trial_used', 'true');
+      setFreeTrialUsed(true);
     }
 
     const data = await response.json();
@@ -321,58 +333,6 @@ CTA: ${JSON.stringify(item.cta)}`;
   const headingFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : "'Fraunces', serif";
   const bodyFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : 'inherit';
 
-  if (!unlocked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#F5F4EE', fontFamily: bodyFont }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Cairo:wght@400;700&display=swap');`}</style>
-        <div className="w-full max-w-sm rounded-xl p-6" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6' }}>
-          <div className="flex justify-end mb-3">
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="text-xs rounded-lg px-2 py-1 focus:outline-none"
-              style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#6B6659' }}
-            >
-              {languages.map(l => (
-                <option key={l.code} value={l.code}>{l.label}</option>
-              ))}
-            </select>
-          </div>
-          <h1
-            className="text-2xl mb-4 flex items-center gap-2"
-            style={{ fontFamily: headingFont }}
-          >
-            <span style={{ display: 'inline-block', transform: 'skewX(-12deg)', fontFamily: 'sans-serif', fontWeight: 800, background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>#</span>
-            <span style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{t.licenseGateTitle}</span>
-          </h1>
-          <input
-            type="text"
-            value={licenseCode}
-            onChange={(e) => setLicenseCode(e.target.value)}
-            placeholder={t.licensePh}
-            className="w-full rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none"
-            style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
-          />
-          {licenseError && <p className="text-sm mb-3" style={{ color: '#B34B3C' }}>{licenseError}</p>}
-          <button
-            onClick={handleUnlock}
-            className="w-full font-medium py-2.5 rounded-lg text-sm"
-            style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE' }}
-          >
-            {t.unlockBtn}
-          </button>
-          <a
-            href="/buy.html"
-            className="block text-center text-xs mt-4"
-            style={{ color: '#A56A45' }}
-          >
-            {t.noCodeText}
-          </a>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen py-10 px-4 relative overflow-hidden" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#F5F4EE', fontFamily: bodyFont }}>
       <style>{`
@@ -394,6 +354,37 @@ CTA: ${JSON.stringify(item.cta)}`;
           <span style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{t.title}</span>
         </h1>
         <p className="text-sm mb-6" style={{ color: '#87837A' }}>{t.subtitle}</p>
+
+        {!unlocked && (
+          <div className="rounded-lg p-3 mb-4" style={{ background: freeTrialUsed ? '#FDECEC' : '#FDF3E8', border: `1px solid ${freeTrialUsed ? '#F3C4C4' : '#F2D9B0'}` }}>
+            {freeTrialUsed ? (
+              <>
+                <p className="text-sm" style={{ color: '#B34B3C', margin: 0, fontWeight: 600 }}>Free preview used</p>
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={licenseCode}
+                    onChange={(e) => setLicenseCode(e.target.value)}
+                    placeholder={t.licensePh}
+                    className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    style={{ background: '#FFFFFF', border: '1px solid #E4E1D6', color: '#2D2A26' }}
+                  />
+                  <button
+                    onClick={handleUnlock}
+                    className="font-medium px-4 rounded-lg text-sm"
+                    style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE' }}
+                  >
+                    {t.unlockBtn}
+                  </button>
+                </div>
+                {licenseError && <p className="text-sm mt-2" style={{ color: '#B34B3C' }}>{licenseError}</p>}
+                <a href="/buy.html" className="block text-xs mt-2" style={{ color: '#A56A45' }}>{t.noCodeText}</a>
+              </>
+            ) : (
+              <p className="text-sm" style={{ color: '#8A6B1A', margin: 0 }}>✨ Try it free — your first generation is on us. No code needed.</p>
+            )}
+          </div>
+        )}
 
         <div className="rounded-xl p-5 space-y-4" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6', boxShadow: '0 0 24px rgba(189,93,58,0.06)' }}>
           <div>
