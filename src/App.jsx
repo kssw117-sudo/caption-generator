@@ -57,6 +57,7 @@ export default function CaptionGenerator() {
   const [showSupportEmail, setShowSupportEmail] = useState(false);
   const [unlocked, setUnlocked] = useState(() => localStorage.getItem('tg_unlocked') === 'true');
   const [freeTrialUsed, setFreeTrialUsed] = useState(() => localStorage.getItem('tg_free_trial_used') === 'true');
+  const [showWelcome, setShowWelcome] = useState(false);
   const [licenseError, setLicenseError] = useState('');
 
   const languages = [
@@ -304,6 +305,14 @@ CTA: ${JSON.stringify(item.cta)}`;
     if (!licenseCode.trim()) return;
     setLicenseError('');
 
+    function celebrateFirstUnlock() {
+      if (!localStorage.getItem('tg_has_unlocked_before')) {
+        localStorage.setItem('tg_has_unlocked_before', 'true');
+        setShowWelcome(true);
+        setTimeout(() => setShowWelcome(false), 4000);
+      }
+    }
+
     if (licenseCode.trim().toUpperCase().startsWith('TAG-')) {
       try {
         const res = await fetch('/api/redeem-appsumo', {
@@ -316,6 +325,7 @@ CTA: ${JSON.stringify(item.cta)}`;
           setUnlocked(true);
           localStorage.setItem('tg_unlocked', 'true');
           localStorage.setItem('tg_licenseCode', licenseCode.trim());
+          celebrateFirstUnlock();
         } else {
           setLicenseError(data.error || t.licenseInvalid);
         }
@@ -328,6 +338,7 @@ CTA: ${JSON.stringify(item.cta)}`;
     setUnlocked(true);
     localStorage.setItem('tg_unlocked', 'true');
     localStorage.setItem('tg_licenseCode', licenseCode.trim());
+    celebrateFirstUnlock();
   }
 
   const headingFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : "'Fraunces', serif";
@@ -356,33 +367,51 @@ CTA: ${JSON.stringify(item.cta)}`;
         <p className="text-sm mb-6" style={{ color: '#87837A' }}>{t.subtitle}</p>
 
         {!unlocked && (
-          <div className="rounded-lg p-3 mb-4" style={{ background: freeTrialUsed ? '#FDECEC' : '#FDF3E8', border: `1px solid ${freeTrialUsed ? '#F3C4C4' : '#F2D9B0'}` }}>
-            {freeTrialUsed ? (
-              <>
-                <p className="text-sm" style={{ color: '#B34B3C', margin: 0, fontWeight: 600 }}>Free preview used</p>
-                <div className="flex gap-2 mt-2">
-                  <input
-                    type="text"
-                    value={licenseCode}
-                    onChange={(e) => setLicenseCode(e.target.value)}
-                    placeholder={t.licensePh}
-                    className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                    style={{ background: '#FFFFFF', border: '1px solid #E4E1D6', color: '#2D2A26' }}
-                  />
-                  <button
-                    onClick={handleUnlock}
-                    className="font-medium px-4 rounded-lg text-sm"
-                    style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE' }}
-                  >
-                    {t.unlockBtn}
-                  </button>
-                </div>
-                {licenseError && <p className="text-sm mt-2" style={{ color: '#B34B3C' }}>{licenseError}</p>}
-                <a href="/buy.html" className="block text-xs mt-2" style={{ color: '#A56A45' }}>{t.noCodeText}</a>
-              </>
-            ) : (
-              <p className="text-sm" style={{ color: '#8A6B1A', margin: 0 }}>✨ Try it free — your first generation is on us. No code needed.</p>
+          <>
+            {!freeTrialUsed && (
+              <div className="rounded-lg p-3 mb-4" style={{ background: '#FDF3E8', border: '1px solid #F2D9B0' }}>
+                <p className="text-sm" style={{ color: '#8A6B1A', margin: 0 }}>✨ Try it free — your first generation is on us. No code needed.</p>
+              </div>
             )}
+            {freeTrialUsed && (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(45,42,38,0.45)', backdropFilter: 'blur(3px)', zIndex: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+                <div className="w-full max-w-sm rounded-xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }}>
+                  <div className="text-center mb-4">
+                    <span style={{ fontSize: 32 }}>✅</span>
+                    <h2 style={{ fontFamily: headingFont, fontSize: 20, fontWeight: 600, color: '#2D2A26', margin: '8px 0 4px' }}>You've tried it free</h2>
+                    <p className="text-sm" style={{ color: '#87837A', margin: 0 }}>Enter your access code to keep going.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={licenseCode}
+                      onChange={(e) => setLicenseCode(e.target.value)}
+                      placeholder={t.licensePh}
+                      className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
+                    />
+                    <button
+                      onClick={handleUnlock}
+                      className="font-medium px-4 rounded-lg text-sm"
+                      style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE' }}
+                    >
+                      {t.unlockBtn}
+                    </button>
+                  </div>
+                  {licenseError && <p className="text-sm mt-2" style={{ color: '#B34B3C' }}>{licenseError}</p>}
+                  <a href="/buy.html" className="block text-center text-xs mt-3" style={{ color: '#A56A45' }}>{t.noCodeText}</a>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {showWelcome && (
+          <div style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}>
+            <div className="rounded-lg px-5 py-3 flex items-center gap-2" style={{ background: '#2D2A26', color: '#FFFFFF', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
+              <span style={{ fontSize: 18 }}>🎉</span>
+              <span className="text-sm font-medium">Welcome! You're all set — unlimited generations, let's go.</span>
+            </div>
           </div>
         )}
 
