@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function CaptionGenerator() {
   const DAILY_LIMIT = 50;
@@ -59,6 +59,16 @@ export default function CaptionGenerator() {
   const [freeTrialUsed, setFreeTrialUsed] = useState(() => localStorage.getItem('tg_free_trial_used') === 'true');
   const [showWelcome, setShowWelcome] = useState(false);
   const [licenseError, setLicenseError] = useState('');
+
+  useEffect(() => {
+    if (window.location.search.includes('welcome=1')) {
+      setShowWelcome(true);
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+      const timer = setTimeout(() => setShowWelcome(false), 3800);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const languages = [
     { code: 'ru', label: 'Русский', englishName: 'Russian', rtl: false },
@@ -301,45 +311,9 @@ CTA: ${JSON.stringify(item.cta)}`;
   // Проверка кода: коды AppSumo начинаются с "TAG-" и проверяются через
   // /api/redeem-appsumo (уникальный код на покупателя, отмечается как
   // использованный). Обычные коды (Getly, TAG92) работают как раньше.
-  async function handleUnlock() {
-    if (!licenseCode.trim()) return;
-    setLicenseError('');
-
-    function celebrateFirstUnlock() {
-      if (!localStorage.getItem('tg_has_unlocked_before')) {
-        localStorage.setItem('tg_has_unlocked_before', 'true');
-        setShowWelcome(true);
-        setTimeout(() => setShowWelcome(false), 4000);
-      }
-    }
-
-    if (licenseCode.trim().toUpperCase().startsWith('TAG-')) {
-      try {
-        const res = await fetch('/api/redeem-appsumo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: licenseCode.trim() })
-        });
-        const data = await res.json();
-        if (data.success) {
-          setUnlocked(true);
-          localStorage.setItem('tg_unlocked', 'true');
-          localStorage.setItem('tg_licenseCode', licenseCode.trim());
-          celebrateFirstUnlock();
-        } else {
-          setLicenseError(data.error || t.licenseInvalid);
-        }
-      } catch (err) {
-        setLicenseError(t.licenseInvalid);
-      }
-      return;
-    }
-
-    setUnlocked(true);
-    localStorage.setItem('tg_unlocked', 'true');
-    localStorage.setItem('tg_licenseCode', licenseCode.trim());
-    celebrateFirstUnlock();
-  }
+  // Разблокировка теперь происходит на отдельной странице /unlock.html —
+  // она сама вызывает /api/redeem-appsumo при необходимости, ставит
+  // localStorage-флаги и возвращает пользователя на / с ?welcome=1.
 
   const headingFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : "'Fraunces', serif";
   const bodyFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : 'inherit';
@@ -367,50 +341,91 @@ CTA: ${JSON.stringify(item.cta)}`;
         <p className="text-sm mb-6" style={{ color: '#87837A' }}>{t.subtitle}</p>
 
         {!unlocked && (
-          <>
-            {!freeTrialUsed && (
-              <div className="rounded-lg p-3 mb-4" style={{ background: '#FDF3E8', border: '1px solid #F2D9B0' }}>
-                <p className="text-sm" style={{ color: '#8A6B1A', margin: 0 }}>✨ Try it free — your first generation is on us. No code needed.</p>
-              </div>
-            )}
-            {freeTrialUsed && (
-              <div style={{ position: 'fixed', inset: 0, background: 'rgba(45,42,38,0.45)', backdropFilter: 'blur(3px)', zIndex: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-                <div className="w-full max-w-sm rounded-xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }}>
-                  <div className="text-center mb-4">
-                    <span style={{ fontSize: 32 }}>✅</span>
-                    <h2 style={{ fontFamily: headingFont, fontSize: 20, fontWeight: 600, color: '#2D2A26', margin: '8px 0 4px' }}>You've tried it free</h2>
-                    <p className="text-sm" style={{ color: '#87837A', margin: 0 }}>Enter your access code to keep going.</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={licenseCode}
-                      onChange={(e) => setLicenseCode(e.target.value)}
-                      placeholder={t.licensePh}
-                      className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                      style={{ background: '#FAF9F4', border: '1px solid #E4E1D6', color: '#2D2A26' }}
-                    />
-                    <button
-                      onClick={handleUnlock}
-                      className="font-medium px-4 rounded-lg text-sm"
-                      style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE' }}
-                    >
-                      {t.unlockBtn}
-                    </button>
-                  </div>
-                  {licenseError && <p className="text-sm mt-2" style={{ color: '#B34B3C' }}>{licenseError}</p>}
-                  <a href="/buy.html" className="block text-center text-xs mt-3" style={{ color: '#A56A45' }}>{t.noCodeText}</a>
+          <div className="rounded-lg p-3 mb-4" style={{ background: freeTrialUsed ? '#FDECEC' : '#FDF3E8', border: `1px solid ${freeTrialUsed ? '#F3C4C4' : '#F2D9B0'}` }}>
+            {freeTrialUsed ? (
+              <div className="flex items-start gap-2.5">
+                <span style={{
+                  flexShrink: 0, width: 18, height: 18, borderRadius: '50%', marginTop: 1,
+                  background: '#D97757', display: 'inline-block',
+                }} />
+                <div style={{ flex: 1 }}>
+                  <p className="text-sm" style={{ color: '#8A4A38', margin: '0 0 10px', fontWeight: 600 }}>Your free preview is over. Enter your code whenever you're ready to keep going.</p>
+                  <a
+                    href="/unlock.html"
+                    className="inline-block font-medium px-4 py-2 rounded-lg text-sm"
+                    style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE', textDecoration: 'none' }}
+                  >
+                    Enter your code →
+                  </a>
+                  <a href="/buy.html" className="block text-xs mt-2" style={{ color: '#A56A45' }}>{t.noCodeText}</a>
                 </div>
               </div>
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <span style={{
+                  flexShrink: 0, width: 18, height: 18, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #D97757, #BD5D3A)', display: 'inline-block',
+                }} />
+                <p className="text-sm" style={{ color: '#8A6B1A', margin: 0 }}>Try it free — your first generation is on us. No code needed.</p>
+              </div>
             )}
-          </>
+          </div>
         )}
 
         {showWelcome && (
-          <div style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}>
-            <div className="rounded-lg px-5 py-3 flex items-center gap-2" style={{ background: '#2D2A26', color: '#FFFFFF', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' }}>
-              <span style={{ fontSize: 18 }}>🎉</span>
-              <span className="text-sm font-medium">Welcome! You're all set — unlimited generations, let's go.</span>
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(45,42,38,0.5)', backdropFilter: 'blur(4px)',
+            animation: 'welcomeFadeIn 0.4s ease both',
+          }}>
+            <style>{`
+              @keyframes welcomeFadeIn { from { opacity: 0; } to { opacity: 1; } }
+              @keyframes welcomeFadeOut { to { opacity: 0; } }
+              @keyframes checkDraw { from { stroke-dashoffset: 40; } to { stroke-dashoffset: 0; } }
+              @keyframes ringPop { 0% { transform: scale(0.4); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+              @keyframes textRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+              @keyframes particleOut {
+                0% { transform: translate(0, 0) scale(1); opacity: 1; }
+                100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+              }
+              .welcome-particle { position: absolute; border-radius: 50%; animation: particleOut 1.1s ease-out both; }
+            `}</style>
+            <div style={{ position: 'relative', textAlign: 'center', animation: 'welcomeFadeOut 0.4s ease 3.4s both' }}>
+              {[...Array(10)].map((_, i) => {
+                const angle = (i / 10) * Math.PI * 2;
+                const dist = 70 + (i % 3) * 20;
+                return (
+                  <span
+                    key={i}
+                    className="welcome-particle"
+                    style={{
+                      left: '50%', top: '38%', width: 7 + (i % 3) * 2, height: 7 + (i % 3) * 2,
+                      background: i % 2 === 0 ? '#D97757' : '#F2C57C',
+                      animationDelay: `${0.15 + i * 0.02}s`,
+                      '--tx': `${Math.cos(angle) * dist}px`,
+                      '--ty': `${Math.sin(angle) * dist}px`,
+                    }}
+                  />
+                );
+              })}
+              <div style={{
+                width: 76, height: 76, borderRadius: '50%', margin: '0 auto 18px',
+                background: 'linear-gradient(135deg, #D97757, #BD5D3A)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 12px 32px rgba(217,119,87,0.4)',
+                animation: 'ringPop 0.55s cubic-bezier(0.34,1.56,0.64,1) both',
+              }}>
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" style={{ strokeDasharray: 40, animation: 'checkDraw 0.5s ease 0.35s both' }} />
+                </svg>
+              </div>
+              <h2 style={{
+                fontFamily: headingFont, fontSize: 26, fontWeight: 600, color: '#FFFFFF', margin: '0 0 6px',
+                animation: 'textRise 0.4s ease 0.5s both',
+              }}>Welcome</h2>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', margin: 0, animation: 'textRise 0.4s ease 0.62s both' }}>
+                You're all set — unlimited generations, let's go.
+              </p>
             </div>
           </div>
         )}
