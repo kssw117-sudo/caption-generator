@@ -8,9 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
 <style>
   body {
-    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: #F5F4EE; color: #2D2A26; font-family: -apple-system, sans-serif; padding: 24px;
-    position: relative; overflow: hidden;
+    margin: 0; background: #F5F4EE; color: #2D2A26;
+    font-family: -apple-system, sans-serif; line-height: 1.6;
+    position: relative; overflow-x: hidden;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
   }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes floatTag {
@@ -25,8 +26,15 @@
   }
   .floating-hash.h1 { font-size: 160px; top: 6%; left: 4%; animation-duration: 8s; }
   .floating-hash.h2 { font-size: 80px; bottom: 8%; right: 8%; animation-duration: 6s; animation-delay: -2s; color: rgba(217,119,87,0.12); }
-  .wrap { max-width: 400px; width: 100%; text-align: center; animation: fadeUp 0.5s ease both; position: relative; z-index: 1; }
-  .card { background: #FFFFFF; border: 1px solid #E4E1D6; border-radius: 16px; padding: 32px 28px; }
+
+  .wrap { max-width: 400px; width: 100%; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
+  .eyebrow { text-align: center; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A56A45; margin-bottom: 14px; animation: fadeUp 0.5s ease both; }
+  h1 { font-family: 'Fraunces', serif; font-size: 28px; text-align: center; margin: 0 0 10px; line-height: 1.2; animation: fadeUp 0.5s ease both; animation-delay: 0.05s; }
+  .sub { text-align: center; color: #87837A; font-size: 14px; max-width: 340px; margin: 0 auto 32px; animation: fadeUp 0.5s ease both; animation-delay: 0.1s; }
+  .card {
+    background: #FFFFFF; border: 1px solid #E4E1D6; border-radius: 16px;
+    padding: 28px; animation: fadeUp 0.5s ease both; animation-delay: 0.15s;
+  }
   input {
     width: 100%; box-sizing: border-box; border-radius: 10px; padding: 12px 14px; font-size: 15px;
     background: #FAF9F4; border: 1px solid #E4E1D6; color: #2D2A26; margin-bottom: 12px; outline: none;
@@ -38,8 +46,9 @@
   }
   button:hover { transform: translateY(-1px); }
   button:disabled { opacity: 0.6; cursor: default; }
-  .error { color: #B34B3C; font-size: 13px; margin-top: 10px; }
-  .back { display: inline-block; margin-top: 16px; color: #A56A45; font-size: 13px; text-decoration: underline; }
+  .error { color: #B34B3C; font-size: 13px; margin-top: 10px; text-align: center; }
+  .back-link { text-align: center; margin-top: 16px; }
+  .back-link a { color: #A56A45; font-size: 13px; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -48,13 +57,15 @@
 <span class="floating-hash h2">#</span>
 
 <div class="wrap">
+  <div class="eyebrow">TagGenerator AI</div>
+  <h1>Enter your code</h1>
+  <p class="sub">Unlock unlimited generations.</p>
+
   <div class="card">
-    <h1 style="font-family:'Fraunces',serif; font-size:24px; margin:0 0 8px;">Enter your code</h1>
-    <p style="color:#87837A; font-size:14px; margin:0 0 22px;">Unlock unlimited generations on TagGenerator AI.</p>
     <input type="text" id="codeInput" placeholder="Your access code" />
     <button id="unlockBtn" onclick="unlock()">Unlock</button>
     <p class="error" id="errorMsg" style="display:none;"></p>
-    <a class="back" href="/">← Back without unlocking</a>
+    <div class="back-link"><a href="/">← Back without unlocking</a></div>
   </div>
 </div>
 
