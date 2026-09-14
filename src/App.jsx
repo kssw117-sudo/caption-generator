@@ -79,6 +79,7 @@ export default function CaptionGenerator() {
   const [history, setHistory] = useState([]);
   const [photo, setPhoto] = useState(null);
   const [video, setVideo] = useState(null);
+  const [videoFrame, setVideoFrame] = useState(null);
   const [brandVoice, setBrandVoice] = useState(() => localStorage.getItem('tg_draft_brandVoice') || '');
   const [batchMode, setBatchMode] = useState(false);
   const [batchTopics, setBatchTopics] = useState(() => localStorage.getItem('tg_draft_batchTopics') || '');
@@ -109,6 +110,7 @@ export default function CaptionGenerator() {
       if (savedResults) setResults(JSON.parse(savedResults));
     } catch (e) { /* повреждённые данные — просто игнорируем */ }
     idbGet('video').then(v => { if (v) setVideo(v); });
+    idbGet('videoFrame').then(f => { if (f) setVideoFrame(f); });
   }, []);
 
   // Сохраняем фото в localStorage при каждом изменении. Если фото слишком
@@ -121,10 +123,14 @@ export default function CaptionGenerator() {
     } catch (e) { /* превышена квота localStorage — пропускаем сохранение черновика */ }
   }, [photo]);
 
-  // Видео — в IndexedDB, там лимит намного больше, чем у localStorage
+  // Видео и извлечённый из него кадр — в IndexedDB, там лимит намного
+  // больше, чем у localStorage
   useEffect(() => {
     if (video) idbSet('video', video);
   }, [video]);
+  useEffect(() => {
+    if (videoFrame) idbSet('videoFrame', videoFrame);
+  }, [videoFrame]);
 
   // Сохраняем результаты генерации, чтобы не потерять их при случайном
   // закрытии вкладки или обновлении страницы
@@ -231,6 +237,8 @@ export default function CaptionGenerator() {
     const lengthInstruction = lengthMode === 'short' ? 'Keep each caption short, 1-2 sentences.' : 'Write more detailed captions, 3-5 sentences.';
     const photoInstruction = photo
       ? 'A photo is attached. Look at it closely and base the captions on what is actually visible in the image (colors, objects, setting, mood) -- do not write generic copy that ignores the photo.'
+      : videoFrame
+      ? 'A frame extracted from the uploaded video is attached. Look at it closely and base the captions on what is actually visible (colors, objects, setting, mood) -- do not write generic copy that ignores it.'
       : '';
 
     const prompt = `You are a social media copywriter for small businesses. Business: "${business}". Post topic: "${topic}". Platform: ${platformName}. Write in ${langInstruction}. ${voiceInstruction} ${emojiInstruction} ${lengthInstruction} ${photoInstruction}
@@ -242,11 +250,12 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
 
     // Если есть фото — отправляем его вместе с промптом, чтобы Claude
     // реально анализировал содержимое (не просто текст темы поста).
-    // Видео не отправляем — Claude Vision принимает только изображения,
-    // не видеофайлы напрямую.
+    // Если фото нет, но есть видео — используем извлечённый из него кадр
+    // (Claude Vision сам видеофайлы не принимает, только изображения).
+    const imageSource = photo || videoFrame;
     let images;
-    if (photo && photo.startsWith('data:')) {
-      const [header, base64] = photo.split(',');
+    if (imageSource && imageSource.startsWith('data:')) {
+      const [header, base64] = imageSource.split(',');
       const mediaTypeMatch = header.match(/data:([^;]+);/);
       images = [{ base64, mediaType: mediaTypeMatch ? mediaTypeMatch[1] : 'image/jpeg' }];
     }
@@ -390,12 +399,43 @@ CTA: ${JSON.stringify(item.cta)}`;
     reader.readAsDataURL(file);
   }
 
+  // Достаём один кадр из видео (на 1-й секунде, чтобы не попасть на чёрный
+  // первый кадр) и превращаем его в обычную картинку через canvas — так
+  // можно отправить его в Claude Vision, который сам видеофайлы не принимает
+  function extractVideoFrame(file) {
+    return new Promise((resolve) => {
+      const videoEl = document.createElement('video');
+      videoEl.preload = 'metadata';
+      videoEl.muted = true;
+      videoEl.playsInline = true;
+      videoEl.src = URL.createObjectURL(file);
+
+      videoEl.onloadedmetadata = () => {
+        const seekTime = Math.min(1, videoEl.duration / 2);
+        videoEl.currentTime = seekTime;
+      };
+
+      videoEl.onseeked = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoEl.videoWidth;
+        canvas.height = videoEl.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(videoEl.src);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+
+      videoEl.onerror = () => resolve(null);
+    });
+  }
+
   function handleVideoUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => setVideo(reader.result);
     reader.readAsDataURL(file);
+    extractVideoFrame(file).then(frame => { if (frame) setVideoFrame(frame); });
   }
 
   // Проверка кода: коды AppSumo начинаются с "TAG-" и проверяются через
