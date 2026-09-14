@@ -465,7 +465,7 @@ CTA: ${JSON.stringify(item.cta)}`;
       <div
         className="absolute pointer-events-none select-none"
         style={{
-          top: '18%', left: '6%', fontSize: 120, fontWeight: 700, color: '#D97757', opacity: 0.08,
+          top: '18%', left: '6%', fontSize: 120, fontWeight: 700, color: '#D97757', opacity: 0.2,
           fontFamily: "'Fraunces', serif", zIndex: 0, animation: 'floatHashtag 10s ease-in-out infinite',
         }}
       >
@@ -474,7 +474,7 @@ CTA: ${JSON.stringify(item.cta)}`;
       <div
         className="absolute pointer-events-none select-none"
         style={{
-          top: '62%', right: '7%', fontSize: 90, fontWeight: 700, color: '#BD5D3A', opacity: 0.07,
+          top: '62%', right: '7%', fontSize: 90, fontWeight: 700, color: '#BD5D3A', opacity: 0.2,
           fontFamily: "'Fraunces', serif", zIndex: 0, animation: 'floatHashtag 13s ease-in-out infinite', animationDelay: '-4s',
         }}
       >
@@ -483,7 +483,7 @@ CTA: ${JSON.stringify(item.cta)}`;
       <div
         className="absolute pointer-events-none select-none"
         style={{
-          top: '8%', right: '10%', fontSize: 60, fontWeight: 700, color: '#C0574B', opacity: 0.09,
+          top: '8%', right: '10%', fontSize: 60, fontWeight: 700, color: '#C0574B', opacity: 0.2,
           fontFamily: "'Fraunces', serif", zIndex: 0, animation: 'floatHashtag 8s ease-in-out infinite', animationDelay: '-2s',
         }}
       >
