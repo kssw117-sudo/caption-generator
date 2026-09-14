@@ -126,10 +126,10 @@ export default function CaptionGenerator() {
   // Видео и извлечённый из него кадр — в IndexedDB, там лимит намного
   // больше, чем у localStorage
   useEffect(() => {
-    if (video) idbSet('video', video);
+    idbSet('video', video);
   }, [video]);
   useEffect(() => {
-    if (videoFrame) idbSet('videoFrame', videoFrame);
+    idbSet('videoFrame', videoFrame);
   }, [videoFrame]);
 
   // Сохраняем результаты генерации, чтобы не потерять их при случайном
@@ -661,34 +661,60 @@ CTA: ${JSON.stringify(item.cta)}`;
 
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.photoLabel}</label>
-            <label
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer"
-              style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
-            >
-              {photo ? (
-                <img src={photo} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-              ) : (
-                <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
+            <div className="flex items-center gap-2">
+              <label
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer flex-1"
+                style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
+              >
+                {photo ? (
+                  <img src={photo} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                ) : (
+                  <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
+                )}
+                <span>{photo ? t.changePhoto : t.uploadPhoto}</span>
+                <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+              </label>
+              {photo && (
+                <button
+                  type="button"
+                  onClick={() => setPhoto(null)}
+                  aria-label="Remove photo"
+                  className="flex items-center justify-center rounded-lg"
+                  style={{ width: 36, height: 36, flexShrink: 0, background: '#FDECEC', color: '#C0574B', border: '1px solid #F3C4C4', fontSize: 16, cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
               )}
-              <span>{photo ? t.changePhoto : t.uploadPhoto}</span>
-              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-            </label>
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.videoLabel}</label>
-            <label
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer"
-              style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
-            >
-              {video ? (
-                <video src={video} muted loop autoPlay playsInline style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-              ) : (
-                <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
+            <div className="flex items-center gap-2">
+              <label
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer flex-1"
+                style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
+              >
+                {video ? (
+                  <video src={video} muted loop autoPlay playsInline style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                ) : (
+                  <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
+                )}
+                <span>{video ? t.changeVideo : t.uploadVideo}</span>
+                <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
+              </label>
+              {video && (
+                <button
+                  type="button"
+                  onClick={() => { setVideo(null); setVideoFrame(null); }}
+                  aria-label="Remove video"
+                  className="flex items-center justify-center rounded-lg"
+                  style={{ width: 36, height: 36, flexShrink: 0, background: '#FDECEC', color: '#C0574B', border: '1px solid #F3C4C4', fontSize: 16, cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
               )}
-              <span>{video ? t.changeVideo : t.uploadVideo}</span>
-              <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
-            </label>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
