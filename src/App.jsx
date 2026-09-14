@@ -454,13 +454,25 @@ CTA: ${JSON.stringify(item.cta)}`;
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Cairo:wght@400;700&display=swap');
         @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(20px,-24px) scale(1.08); } }
         @keyframes pulseDot { 0%, 80%, 100% { opacity: 0.25; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1); } }
+        @keyframes floatHashtag { 0%, 100% { transform: translate(0, 0) rotate(-6deg); } 50% { transform: translate(14px, -20px) rotate(6deg); } }
       `}</style>
 
       <div className="absolute rounded-full pointer-events-none" style={{ width: 340, height: 340, background: '#D97757', filter: 'blur(90px)', opacity: 0.12, top: -100, left: -80, animation: 'floatBlob 14s ease-in-out infinite' }} />
       <div className="absolute rounded-full pointer-events-none" style={{ width: 300, height: 300, background: '#BD5D3A', filter: 'blur(90px)', opacity: 0.14, bottom: -80, right: -60, animation: 'floatBlob 16s ease-in-out infinite', animationDelay: '-6s' }} />
       <div className="absolute rounded-full pointer-events-none" style={{ width: 200, height: 200, background: '#C0574B', filter: 'blur(80px)', opacity: 0.08, top: '40%', right: '10%', animation: 'floatBlob 12s ease-in-out infinite', animationDelay: '-3s' }} />
 
-      <div className="max-w-xl mx-auto relative">
+      {/* Плавающий знак хэштега — декоративный, позади формы (z-index 0, форма выше) */}
+      <div
+        className="absolute pointer-events-none select-none"
+        style={{
+          top: '18%', left: '6%', fontSize: 120, fontWeight: 700, color: '#D97757', opacity: 0.08,
+          fontFamily: "'Fraunces', serif", zIndex: 0, animation: 'floatHashtag 10s ease-in-out infinite',
+        }}
+      >
+        #
+      </div>
+
+      <div className="max-w-xl mx-auto relative" style={{ zIndex: 1 }}>
         <h1
           className="text-3xl leading-tight flex items-center gap-2 mb-2"
           style={{ fontFamily: headingFont, letterSpacing: 'normal' }}
