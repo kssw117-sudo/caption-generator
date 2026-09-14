@@ -229,18 +229,32 @@ export default function CaptionGenerator() {
       : `Use a friendly, casual small-business tone.`;
     const emojiInstruction = includeEmoji ? 'Include one relevant emoji in each caption.' : 'Do not include any emojis.';
     const lengthInstruction = lengthMode === 'short' ? 'Keep each caption short, 1-2 sentences.' : 'Write more detailed captions, 3-5 sentences.';
+    const photoInstruction = photo
+      ? 'A photo is attached. Look at it closely and base the captions on what is actually visible in the image (colors, objects, setting, mood) -- do not write generic copy that ignores the photo.'
+      : '';
 
-    const prompt = `You are a social media copywriter for small businesses. Business: "${business}". Post topic: "${topic}". Platform: ${platformName}. Write in ${langInstruction}. ${voiceInstruction} ${emojiInstruction} ${lengthInstruction}
+    const prompt = `You are a social media copywriter for small businesses. Business: "${business}". Post topic: "${topic}". Platform: ${platformName}. Write in ${langInstruction}. ${voiceInstruction} ${emojiInstruction} ${lengthInstruction} ${photoInstruction}
 
 Respond ONLY with valid JSON, no markdown, no code fences, in this exact shape:
 {"captions": ["caption option 1", "caption option 2", "caption option 3"], "hashtags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8"], "cta": "one short call-to-action line"}
 
 Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtags should be relevant to the business niche and platform, without the # symbol, lowercase, no spaces. The call-to-action line should be short and platform-appropriate (e.g. "Order via WhatsApp" style).`;
 
+    // Если есть фото — отправляем его вместе с промптом, чтобы Claude
+    // реально анализировал содержимое (не просто текст темы поста).
+    // Видео не отправляем — Claude Vision принимает только изображения,
+    // не видеофайлы напрямую.
+    let images;
+    if (photo && photo.startsWith('data:')) {
+      const [header, base64] = photo.split(',');
+      const mediaTypeMatch = header.match(/data:([^;]+);/);
+      images = [{ base64, mediaType: mediaTypeMatch ? mediaTypeMatch[1] : 'image/jpeg' }];
+    }
+
     const response = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ licenseCode, prompt, trial: isTrial })
+      body: JSON.stringify({ licenseCode, prompt, images, trial: isTrial })
     });
 
     if (response.status === 403) {
