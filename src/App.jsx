@@ -461,12 +461,30 @@ CTA: ${JSON.stringify(item.cta)}`;
       <div className="absolute rounded-full pointer-events-none" style={{ width: 300, height: 300, background: '#BD5D3A', filter: 'blur(90px)', opacity: 0.14, bottom: -80, right: -60, animation: 'floatBlob 16s ease-in-out infinite', animationDelay: '-6s' }} />
       <div className="absolute rounded-full pointer-events-none" style={{ width: 200, height: 200, background: '#C0574B', filter: 'blur(80px)', opacity: 0.08, top: '40%', right: '10%', animation: 'floatBlob 12s ease-in-out infinite', animationDelay: '-3s' }} />
 
-      {/* Плавающий знак хэштега — декоративный, позади формы (z-index 0, форма выше) */}
+      {/* Плавающие знаки хэштега — декоративные, позади формы (z-index 0, форма выше) */}
       <div
         className="absolute pointer-events-none select-none"
         style={{
           top: '18%', left: '6%', fontSize: 120, fontWeight: 700, color: '#D97757', opacity: 0.08,
           fontFamily: "'Fraunces', serif", zIndex: 0, animation: 'floatHashtag 10s ease-in-out infinite',
+        }}
+      >
+        #
+      </div>
+      <div
+        className="absolute pointer-events-none select-none"
+        style={{
+          top: '62%', right: '7%', fontSize: 90, fontWeight: 700, color: '#BD5D3A', opacity: 0.07,
+          fontFamily: "'Fraunces', serif", zIndex: 0, animation: 'floatHashtag 13s ease-in-out infinite', animationDelay: '-4s',
+        }}
+      >
+        #
+      </div>
+      <div
+        className="absolute pointer-events-none select-none"
+        style={{
+          top: '8%', right: '10%', fontSize: 60, fontWeight: 700, color: '#C0574B', opacity: 0.09,
+          fontFamily: "'Fraunces', serif", zIndex: 0, animation: 'floatHashtag 8s ease-in-out infinite', animationDelay: '-2s',
         }}
       >
         #
