@@ -1,5 +1,38 @@
 import React, { useState, useEffect } from 'react';
 
+// Маленький помощник для IndexedDB — используем только для видео,
+// т.к. оно может быть слишком большим для localStorage (лимит ~5-10 МБ)
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('tg_drafts', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('files');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbGet(key) {
+  try {
+    const db = await idbOpen();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction('files', 'readonly');
+      const req = tx.objectStore('files').get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) { return null; }
+}
+async function idbSet(key, value) {
+  try {
+    const db = await idbOpen();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction('files', 'readwrite');
+      tx.objectStore('files').put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) { /* тихо игнорируем — видео просто не сохранится черновиком */ }
+}
+
 export default function CaptionGenerator() {
   const DAILY_LIMIT = 50;
   const LIMIT_STORAGE_KEY = 'tg_daily_gens';
@@ -35,9 +68,9 @@ export default function CaptionGenerator() {
     return true;
   }
 
-  const [business, setBusiness] = useState('');
+  const [business, setBusiness] = useState(() => localStorage.getItem('tg_draft_business') || '');
   const [dailyCount, setDailyCount] = useState(() => getDailyCount());
-  const [postAbout, setPostAbout] = useState('');
+  const [postAbout, setPostAbout] = useState(() => localStorage.getItem('tg_draft_postAbout') || '');
   const [platform, setPlatform] = useState('instagram');
   const [language, setLanguage] = useState('en');
   const [loading, setLoading] = useState(false);
@@ -46,9 +79,9 @@ export default function CaptionGenerator() {
   const [history, setHistory] = useState([]);
   const [photo, setPhoto] = useState(null);
   const [video, setVideo] = useState(null);
-  const [brandVoice, setBrandVoice] = useState('');
+  const [brandVoice, setBrandVoice] = useState(() => localStorage.getItem('tg_draft_brandVoice') || '');
   const [batchMode, setBatchMode] = useState(false);
-  const [batchTopics, setBatchTopics] = useState('');
+  const [batchTopics, setBatchTopics] = useState(() => localStorage.getItem('tg_draft_batchTopics') || '');
   const [includeEmoji, setIncludeEmoji] = useState(true);
   const [lengthMode, setLengthMode] = useState('short');
   const [results, setResults] = useState([]);
@@ -59,6 +92,47 @@ export default function CaptionGenerator() {
   const [freeTrialUsed, setFreeTrialUsed] = useState(() => localStorage.getItem('tg_free_trial_used') === 'true');
   const [showWelcome, setShowWelcome] = useState(false);
   const [licenseError, setLicenseError] = useState('');
+
+  // Сохраняем черновик полей формы в localStorage при каждом изменении —
+  // чтобы обновление страницы не стирало то, что уже ввели
+  useEffect(() => { localStorage.setItem('tg_draft_business', business); }, [business]);
+  useEffect(() => { localStorage.setItem('tg_draft_brandVoice', brandVoice); }, [brandVoice]);
+  useEffect(() => { localStorage.setItem('tg_draft_postAbout', postAbout); }, [postAbout]);
+  useEffect(() => { localStorage.setItem('tg_draft_batchTopics', batchTopics); }, [batchTopics]);
+
+  // Восстанавливаем фото, видео и последние результаты при загрузке страницы
+  useEffect(() => {
+    try {
+      const savedPhoto = localStorage.getItem('tg_draft_photo');
+      if (savedPhoto) setPhoto(savedPhoto);
+      const savedResults = localStorage.getItem('tg_draft_results');
+      if (savedResults) setResults(JSON.parse(savedResults));
+    } catch (e) { /* повреждённые данные — просто игнорируем */ }
+    idbGet('video').then(v => { if (v) setVideo(v); });
+  }, []);
+
+  // Сохраняем фото в localStorage при каждом изменении. Если фото слишком
+  // большое и localStorage переполнен — тихо не сохраняем черновик,
+  // само приложение при этом продолжает работать нормально.
+  useEffect(() => {
+    try {
+      if (photo) localStorage.setItem('tg_draft_photo', photo);
+      else localStorage.removeItem('tg_draft_photo');
+    } catch (e) { /* превышена квота localStorage — пропускаем сохранение черновика */ }
+  }, [photo]);
+
+  // Видео — в IndexedDB, там лимит намного больше, чем у localStorage
+  useEffect(() => {
+    if (video) idbSet('video', video);
+  }, [video]);
+
+  // Сохраняем результаты генерации, чтобы не потерять их при случайном
+  // закрытии вкладки или обновлении страницы
+  useEffect(() => {
+    try {
+      if (results.length > 0) localStorage.setItem('tg_draft_results', JSON.stringify(results));
+    } catch (e) { /* превышена квота — пропускаем */ }
+  }, [results]);
 
   useEffect(() => {
     if (window.location.search.includes('welcome=1')) {
@@ -305,7 +379,9 @@ CTA: ${JSON.stringify(item.cta)}`;
   function handleVideoUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
-    setVideo(URL.createObjectURL(file));
+    const reader = new FileReader();
+    reader.onload = () => setVideo(reader.result);
+    reader.readAsDataURL(file);
   }
 
   // Проверка кода: коды AppSumo начинаются с "TAG-" и проверяются через
