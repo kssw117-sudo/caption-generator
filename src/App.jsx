@@ -800,6 +800,8 @@ CTA: ${JSON.stringify(item.cta)}`;
                         </div>
                         {photo ? (
                           <img src={photo} alt="" style={{ width: '100%', aspectRatio: '1.6 / 1', borderRadius: 10, objectFit: 'cover', marginBottom: 12 }} />
+                        ) : video ? (
+                          <video src={video} controls style={{ width: '100%', aspectRatio: '1.6 / 1', borderRadius: 10, objectFit: 'cover', marginBottom: 12 }} />
                         ) : (
                           <div style={{ width: '100%', aspectRatio: '1.6 / 1', borderRadius: 10, background: 'linear-gradient(135deg, rgba(217,119,87,0.10), rgba(189,93,58,0.10))', marginBottom: 12 }} />
                         )}
