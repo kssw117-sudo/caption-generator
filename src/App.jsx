@@ -92,7 +92,27 @@ export default function CaptionGenerator() {
   const [unlocked, setUnlocked] = useState(() => localStorage.getItem('tg_unlocked') === 'true');
   const [freeTrialUsed, setFreeTrialUsed] = useState(() => localStorage.getItem('tg_free_trial_used') === 'true');
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showHelpBubble, setShowHelpBubble] = useState(false);
   const [licenseError, setLicenseError] = useState('');
+
+  // Лёгкий "поп"-звук для открытия/закрытия окошка подсказки —
+  // генерируется прямо в браузере, никакие аудиофайлы не нужны
+  function playPopSound(opening) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(opening ? 520 : 380, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(opening ? 780 : 260, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) { /* звук не критичен для работы приложения */ }
+  }
 
   // Сохраняем черновик полей формы в localStorage при каждом изменении —
   // чтобы обновление страницы не стирало то, что уже ввели
@@ -1027,6 +1047,38 @@ CTA: ${JSON.stringify(item.cta)}`;
           </div>
         </div>
       </div>
+
+      {/* Плавающая кнопка "как пользоваться" — в углу экрана, как виджет чата поддержки */}
+      <button
+        onClick={() => {
+          playPopSound(!showHelpBubble);
+          setShowHelpBubble(v => !v);
+        }}
+        aria-label="How it works"
+        style={{
+          position: 'fixed', bottom: 20, right: 20, width: 48, height: 48, borderRadius: '50%',
+          background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#FFF', border: 'none',
+          cursor: 'pointer', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 14px rgba(189,93,58,0.35)', zIndex: 50,
+        }}
+      >
+        {showHelpBubble ? '\u2715' : '?'}
+      </button>
+
+      {showHelpBubble && (
+        <div
+          style={{
+            position: 'fixed', bottom: 80, right: 20, width: 300, maxWidth: 'calc(100vw - 40px)',
+            background: '#FFF', borderRadius: 14, padding: 18, boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+            border: '1px solid #EDEAE0', zIndex: 50,
+          }}
+        >
+          <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 600, color: '#2D2A26' }}>How TagGenerator AI works</p>
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: '#5B564C' }}>
+            Upload a photo or video. The AI actually looks at it, analyzes what's really in the shot, and writes the post for you. Instagram, TikTok, WhatsApp, YouTube Shorts, X, Pinterest. Your brand voice in every line. Batch mode for a full week in one click.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
