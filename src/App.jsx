@@ -126,10 +126,10 @@ export default function CaptionGenerator() {
   // Видео и извлечённый из него кадр — в IndexedDB, там лимит намного
   // больше, чем у localStorage
   useEffect(() => {
-    idbSet('video', video);
+    if (video) idbSet('video', video);
   }, [video]);
   useEffect(() => {
-    idbSet('videoFrame', videoFrame);
+    if (videoFrame) idbSet('videoFrame', videoFrame);
   }, [videoFrame]);
 
   // Сохраняем результаты генерации, чтобы не потерять их при случайном
@@ -175,7 +175,7 @@ export default function CaptionGenerator() {
 
   const ui = {
     ru: { title: 'Генератор подписей и хэштегов', subtitle: 'Для постов малого бизнеса в Instagram, TikTok, WhatsApp', businessLabel: 'Название бизнеса', businessPh: 'Например: кофейня «Утро»', brandVoiceLabel: 'Голос бренда', brandVoicePh: 'Например: дружелюбный, с юмором', postLabel: 'О чём пост', postPh: 'Например: новое сезонное меню с тыквенным латте', platformLabel: 'Платформа', languageLabel: 'Язык', whatsappStatus: 'WhatsApp статус', generate: 'Сгенерировать', generating: 'Генерирую', fillError: 'Заполните название бизнеса и тему поста', genError: 'Не удалось сгенерировать. Попробуйте ещё раз.', limitReached: 'Достигнут дневной лимит генераций. Попробуйте завтра.', captionsHeading: 'Варианты подписи', hashtagsHeading: 'Хэштеги', copy: 'Копировать', copied: 'Скопировано', copyAll: 'Копировать все хэштеги', preview: 'Предпросмотр', historyHeading: 'История', photoLabel: 'Фото (к нему теги)', uploadPhoto: 'Загрузить фото', changePhoto: 'Сменить фото', videoLabel: 'Видео (к нему теги)', uploadVideo: 'Загрузить видео', changeVideo: 'Сменить видео' , batchToggle: 'Пакетный режим', batchLabel: 'Темы (по одной на строку)', batchPh: 'кофе с собой\nновая коллекция\nчёрная пятница', emojiToggle: 'Эмодзи', lengthShort: 'Коротко', lengthDetailed: 'Развёрнуто', ctaHeading: 'Призыв к действию', translateTo: 'Перевести на', translateBtn: 'Перевести', licenseGateTitle: 'Введите код доступа', licensePh: 'Код доступа', unlockBtn: 'Разблокировать', licenseInvalid: 'Неверный или неактивный код', noCodeText: 'Нет кода? Купить доступ'},
-    en: { title: 'Caption & hashtag generator', subtitle: 'For small business posts on Instagram, TikTok, WhatsApp', businessLabel: 'Business name', businessPh: 'e.g. Morning Coffee Shop', brandVoiceLabel: 'Brand voice', brandVoicePh: 'e.g. friendly, playful', postLabel: 'What is the post about', postPh: 'e.g. new seasonal pumpkin latte menu', platformLabel: 'Platform', languageLabel: 'Language', whatsappStatus: 'WhatsApp status', generate: 'Generate', generating: 'Generating', fillError: 'Fill in business name and post topic', genError: 'Could not generate. Try again.', limitReached: 'Daily generation limit reached. Try again tomorrow.', captionsHeading: 'Caption options', hashtagsHeading: 'Hashtags', copy: 'Copy', copied: 'Copied', copyAll: 'Copy all hashtags', preview: 'Preview', historyHeading: 'History', photoLabel: 'Photo (tags go with this)', uploadPhoto: 'Upload photo', changePhoto: 'Change photo', videoLabel: 'Video (tags go with this)', uploadVideo: 'Upload video', changeVideo: 'Change video' , batchToggle: 'Batch mode', batchLabel: 'Topics (one per line)', batchPh: 'coffee to go\nnew collection\nblack friday', emojiToggle: 'Emoji', lengthShort: 'Short', lengthDetailed: 'Detailed', ctaHeading: 'Call to action', translateTo: 'Translate to', translateBtn: 'Translate', licenseGateTitle: 'Enter your access code', licensePh: 'Access code', unlockBtn: 'Unlock', licenseInvalid: 'Invalid or inactive code', noCodeText: 'No code? Buy access'},
+    en: { title: 'Caption & hashtag generator', subtitle: "For small business posts, wherever you're posting them.", businessLabel: 'Business name', businessPh: 'e.g. Morning Coffee Shop', brandVoiceLabel: 'Brand voice', brandVoicePh: 'e.g. friendly, playful', postLabel: 'What is the post about', postPh: 'e.g. new seasonal pumpkin latte menu', platformLabel: 'Platform', languageLabel: 'Language', whatsappStatus: 'WhatsApp status', generate: 'Generate', generating: 'Generating', fillError: 'Fill in business name and post topic', genError: 'Could not generate. Try again.', limitReached: 'Daily generation limit reached. Try again tomorrow.', captionsHeading: 'Caption options', hashtagsHeading: 'Hashtags', copy: 'Copy', copied: 'Copied', copyAll: 'Copy all hashtags', preview: 'Preview', historyHeading: 'History', photoLabel: 'Photo (tags go with this)', uploadPhoto: 'Upload photo', changePhoto: 'Change photo', videoLabel: 'Video (tags go with this)', uploadVideo: 'Upload video', changeVideo: 'Change video' , batchToggle: 'Batch mode', batchLabel: 'Topics (one per line)', batchPh: 'coffee to go\nnew collection\nblack friday', emojiToggle: 'Emoji', lengthShort: 'Short', lengthDetailed: 'Detailed', ctaHeading: 'Call to action', translateTo: 'Translate to', translateBtn: 'Translate', licenseGateTitle: 'Enter your access code', licensePh: 'Access code', unlockBtn: 'Unlock', licenseInvalid: 'Invalid or inactive code', noCodeText: 'No code? Buy access'},
     ar: { title: 'مولد التعليقات والوسوم', subtitle: 'لمنشورات الأعمال الصغيرة على إنستغرام وتيك توك وواتساب', businessLabel: 'اسم النشاط التجاري', businessPh: 'مثال: مقهى الصباح', brandVoiceLabel: 'نبرة العلامة التجارية', brandVoicePh: 'مثال: ودود ومرح', postLabel: 'موضوع المنشور', postPh: 'مثال: قائمة اليقطين الموسمية الجديدة', platformLabel: 'المنصة', languageLabel: 'اللغة', whatsappStatus: 'حالة واتساب', generate: 'إنشاء', generating: 'جارٍ الإنشاء', fillError: 'يرجى إدخال اسم النشاط وموضوع المنشور', genError: 'تعذر الإنشاء. حاول مرة أخرى.', captionsHeading: 'خيارات التعليق', hashtagsHeading: 'الوسوم', copy: 'نسخ', copied: 'تم النسخ', copyAll: 'نسخ جميع الوسوم', preview: 'معاينة', historyHeading: 'السجل', photoLabel: 'الصورة (معها الوسوم)', uploadPhoto: 'رفع صورة', changePhoto: 'تغيير الصورة', videoLabel: 'الفيديو (معه الوسوم)', uploadVideo: 'رفع فيديو', changeVideo: 'تغيير الفيديو' , batchToggle: 'الوضع الجماعي', batchLabel: 'المواضيع (كل موضوع في سطر)', batchPh: 'قهوة للطريق\nمجموعة جديدة\nالجمعة السوداء', emojiToggle: 'الرموز التعبيرية', lengthShort: 'قصير', lengthDetailed: 'مفصل', ctaHeading: 'دعوة لاتخاذ إجراء', translateTo: 'ترجمة إلى', translateBtn: 'ترجمة', licenseGateTitle: 'أدخل رمز الوصول', licensePh: 'رمز الوصول', unlockBtn: 'فتح', licenseInvalid: 'رمز غير صالح أو غير مفعّل', noCodeText: 'لا يوجد رمز؟ شراء الوصول'},
     fa: { title: 'تولیدکننده کپشن و هشتگ', subtitle: 'برای پست‌های کسب‌وکارهای کوچک در اینستاگرام، تیک‌تاک، واتساپ', businessLabel: 'نام کسب‌وکار', businessPh: 'مثال: کافه صبح', brandVoiceLabel: 'لحن برند', brandVoicePh: 'مثال: دوستانه و بازیگوش', postLabel: 'موضوع پست چیست', postPh: 'مثال: منوی فصلی جدید لاته کدو تنبل', platformLabel: 'پلتفرم', languageLabel: 'زبان', whatsappStatus: 'وضعیت واتساپ', generate: 'ایجاد', generating: 'در حال ایجاد', fillError: 'نام کسب‌وکار و موضوع پست را پر کنید', genError: 'ایجاد نشد. دوباره امتحان کنید.', captionsHeading: 'گزینه‌های کپشن', hashtagsHeading: 'هشتگ‌ها', copy: 'کپی', copied: 'کپی شد', copyAll: 'کپی همه هشتگ‌ها', preview: 'پیش‌نمایش', historyHeading: 'تاریخچه', photoLabel: 'عکس (با تگ‌ها)', uploadPhoto: 'آپلود عکس', changePhoto: 'تغییر عکس', videoLabel: 'ویدیو (با تگ‌ها)', uploadVideo: 'آپلود ویدیو', changeVideo: 'تغییر ویدیو' , batchToggle: 'حالت دسته‌ای', batchLabel: 'موضوعات (هر خط یک موضوع)', batchPh: 'قهوه بیرون‌بر\nکالکشن جدید\nبلک فرایدی', emojiToggle: 'ایموجی', lengthShort: 'کوتاه', lengthDetailed: 'مفصل', ctaHeading: 'فراخوان اقدام', translateTo: 'ترجمه به', translateBtn: 'ترجمه', licenseGateTitle: 'کد دسترسی را وارد کنید', licensePh: 'کد دسترسی', unlockBtn: 'باز کردن', licenseInvalid: 'کد نامعتبر یا غیرفعال', noCodeText: 'کد ندارید؟ خرید دسترسی'},
     es: { title: 'Generador de textos y hashtags', subtitle: 'Para publicaciones de pequeños negocios en Instagram, TikTok, WhatsApp', businessLabel: 'Nombre del negocio', businessPh: 'Ej: Cafetería Mañana', brandVoiceLabel: 'Tono de marca', brandVoicePh: 'Ej: amigable y divertido', postLabel: 'Tema de la publicación', postPh: 'Ej: nuevo menú de temporada con latte de calabaza', platformLabel: 'Plataforma', languageLabel: 'Idioma', whatsappStatus: 'Estado de WhatsApp', generate: 'Generar', generating: 'Generando', fillError: 'Completa el nombre del negocio y el tema', genError: 'No se pudo generar. Intenta de nuevo.', captionsHeading: 'Opciones de texto', hashtagsHeading: 'Hashtags', copy: 'Copiar', copied: 'Copiado', copyAll: 'Copiar todos los hashtags', preview: 'Vista previa', historyHeading: 'Historial', photoLabel: 'Foto (con estas etiquetas)', uploadPhoto: 'Subir foto', changePhoto: 'Cambiar foto', videoLabel: 'Video (con estas etiquetas)', uploadVideo: 'Subir video', changeVideo: 'Cambiar video' , batchToggle: 'Modo por lotes', batchLabel: 'Temas (uno por línea)', batchPh: 'café para llevar\nnueva colección\nblack friday', emojiToggle: 'Emoji', lengthShort: 'Corto', lengthDetailed: 'Detallado', ctaHeading: 'Llamada a la acción', translateTo: 'Traducir a', translateBtn: 'Traducir', licenseGateTitle: 'Introduce tu código de acceso', licensePh: 'Código de acceso', unlockBtn: 'Desbloquear', licenseInvalid: 'Código inválido o inactivo', noCodeText: '¿Sin código? Comprar acceso'},
@@ -451,7 +451,7 @@ CTA: ${JSON.stringify(item.cta)}`;
   return (
     <div className="min-h-screen py-10 px-4 relative overflow-hidden" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#F5F4EE', fontFamily: bodyFont }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Cairo:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Instrument+Serif:ital@0;1&family=Cairo:wght@400;700&display=swap');
         @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(20px,-24px) scale(1.08); } }
         @keyframes pulseDot { 0%, 80%, 100% { opacity: 0.25; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1); } }
         @keyframes floatHashtag { 0%, 100% { transform: translate(0, 0) rotate(-6deg); } 50% { transform: translate(14px, -20px) rotate(6deg); } }
@@ -492,13 +492,29 @@ CTA: ${JSON.stringify(item.cta)}`;
 
       <div className="max-w-xl mx-auto relative" style={{ zIndex: 1 }}>
         <h1
-          className="text-3xl leading-tight flex items-center gap-2 mb-2"
+          className="text-3xl leading-tight flex items-center justify-center gap-2 mb-2"
           style={{ fontFamily: headingFont, letterSpacing: 'normal' }}
         >
           <span style={{ display: 'inline-block', transform: 'skewX(-12deg)', fontFamily: 'sans-serif', fontWeight: 800, background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>#</span>
-          <span style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{t.title}</span>
+          <span style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>TagGenerator AI</span>
         </h1>
-        <p className="text-sm mb-6" style={{ color: '#87837A' }}>{t.subtitle}</p>
+        <p className="text-sm mb-6 text-center" style={{ color: '#87837A' }}>{t.subtitle}</p>
+
+        <div className="rounded-lg overflow-hidden mb-6" style={{ position: 'relative' }}>
+          <img
+            src="/images/hero1.jpg"
+            alt="The photo already knows what to say"
+            style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 10 }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,9,8,0) 45%, rgba(10,9,8,0.55) 100%)', borderRadius: 10 }} />
+          <p style={{
+            position: 'absolute', bottom: 14, left: 16, right: 16, margin: 0,
+            color: '#F5F4EE', fontFamily: "'Instrument Serif', serif", fontStyle: 'italic', fontSize: 19, lineHeight: 1.35,
+            textShadow: '0 1px 6px rgba(0,0,0,0.4)', textAlign: 'center',
+          }}>
+            The photo already knows what to say.
+          </p>
+        </div>
 
         {!unlocked && (
           <div className="rounded-lg p-3 mb-4" style={{ background: freeTrialUsed ? '#FDECEC' : '#FDF3E8', border: `1px solid ${freeTrialUsed ? '#F3C4C4' : '#F2D9B0'}` }}>
@@ -661,60 +677,34 @@ CTA: ${JSON.stringify(item.cta)}`;
 
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.photoLabel}</label>
-            <div className="flex items-center gap-2">
-              <label
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer flex-1"
-                style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
-              >
-                {photo ? (
-                  <img src={photo} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-                ) : (
-                  <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
-                )}
-                <span>{photo ? t.changePhoto : t.uploadPhoto}</span>
-                <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-              </label>
-              {photo && (
-                <button
-                  type="button"
-                  onClick={() => setPhoto(null)}
-                  aria-label="Remove photo"
-                  className="flex items-center justify-center rounded-lg"
-                  style={{ width: 36, height: 36, flexShrink: 0, background: '#FDECEC', color: '#C0574B', border: '1px solid #F3C4C4', fontSize: 16, cursor: 'pointer' }}
-                >
-                  ✕
-                </button>
+            <label
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer"
+              style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
+            >
+              {photo ? (
+                <img src={photo} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+              ) : (
+                <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
               )}
-            </div>
+              <span>{photo ? t.changePhoto : t.uploadPhoto}</span>
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+            </label>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.videoLabel}</label>
-            <div className="flex items-center gap-2">
-              <label
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer flex-1"
-                style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
-              >
-                {video ? (
-                  <video src={video} muted loop autoPlay playsInline style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-                ) : (
-                  <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
-                )}
-                <span>{video ? t.changeVideo : t.uploadVideo}</span>
-                <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
-              </label>
-              {video && (
-                <button
-                  type="button"
-                  onClick={() => { setVideo(null); setVideoFrame(null); }}
-                  aria-label="Remove video"
-                  className="flex items-center justify-center rounded-lg"
-                  style={{ width: 36, height: 36, flexShrink: 0, background: '#FDECEC', color: '#C0574B', border: '1px solid #F3C4C4', fontSize: 16, cursor: 'pointer' }}
-                >
-                  ✕
-                </button>
+            <label
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer"
+              style={{ background: '#FAF9F4', border: '1px dashed #E4E1D6', color: '#87837A' }}
+            >
+              {video ? (
+                <video src={video} muted loop autoPlay playsInline style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+              ) : (
+                <span style={{ width: 32, height: 32, borderRadius: 6, background: '#EDEAE0', flexShrink: 0 }} />
               )}
-            </div>
+              <span>{video ? t.changeVideo : t.uploadVideo}</span>
+              <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
+            </label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
