@@ -1045,6 +1045,9 @@ CTA: ${JSON.stringify(item.cta)}`;
               </a>
             )}
           </div>
+          <p className="text-xs" style={{ color: '#87837A', textAlign: 'center', marginTop: 10, opacity: 0.8, fontSize: 10.5 }}>
+            Грезина Ксения Викторовна (Ksenia Grezina) &middot; Tax ID (ИНН) 710607167655
+          </p>
         </div>
       </div>
 
