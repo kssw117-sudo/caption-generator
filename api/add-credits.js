@@ -18,10 +18,10 @@ export default async function handler(req, res) {
 
   const creditsKey = `credits:${licenseCode}`;
 
-  await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
+  await fetch(`${process.env.UPSTASH_REDIS_REST_KV_REST_API_URL}/pipeline`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify([['INCRBY', creditsKey, amount]])
