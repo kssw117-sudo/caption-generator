@@ -7,7 +7,8 @@
 const DAILY_LIMIT = 15;
 const REDIS_URL = process.env.UPSTASH_REDIS_REST_KV_REST_API_URL;
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN;
-const MODEL = 'claude-sonnet-4-6';
+// Haiku -- в несколько раз быстрее Sonnet, для капшнов и хештегов качества хватает.
+const MODEL = 'claude-haiku-4-5-20251001';
 
 async function redis(commands) {
   const res = await fetch(`${REDIS_URL}/pipeline`, {
@@ -42,7 +43,7 @@ async function checkAndConsume(licenseCode) {
   ]);
 
   if (count <= DAILY_LIMIT) {
-    return { ok: true };
+    return { ok: true, refundCommand: ['DECR', limitKey] };
   }
 
   // Дневной лимит исчерпан -- пробуем списать с докупленных токенов
@@ -51,10 +52,31 @@ async function checkAndConsume(licenseCode) {
 
   if (credits > 0) {
     await redis([['DECR', creditsKey]]);
-    return { ok: true, usedCredit: true };
+    return { ok: true, refundCommand: ['INCR', creditsKey] };
   }
 
   return { ok: false };
+}
+
+// Неудачная генерация -- возвращаем списанное (дневную генерацию или докупленный токен).
+async function refund(consumed) {
+  if (!consumed || !consumed.refundCommand) return;
+  try {
+    await redis([consumed.refundCommand]);
+  } catch (err) {
+    console.error('Refund failed:', err.message);
+  }
+}
+
+// Ответ модели должен быть валидным JSON -- иначе сайт не сможет его показать.
+function isValidJsonAnswer(data) {
+  try {
+    const text = (data.content || []).map(b => b.text || '').join('');
+    JSON.parse(text.replace(/```json|```/g, '').trim());
+    return true;
+  } catch (err) {
+    return false;
+  }
 }
 
 async function healthCheck(res) {
@@ -112,12 +134,14 @@ export default async function handler(req, res) {
   }
 
   // Серверный лимит -- только для платных (не trial) запросов.
+  let consumed = null;
   if (!isFreeTrial) {
     try {
       const result = await checkAndConsume(licenseCode);
       if (!result.ok) {
         return res.status(429).json({ error: 'limit_reached' });
       }
+      consumed = result;
     } catch (err) {
       // Redis недоступен -- не ломаем генерацию покупателю.
       console.error('Limit check failed, allowing request:', err.message);
@@ -147,7 +171,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 1000,
+        max_tokens: 1500,
         messages: [{ role: 'user', content }]
       })
     });
@@ -155,11 +179,18 @@ export default async function handler(req, res) {
     const data = await response.json();
     if (!response.ok) {
       console.error('Anthropic error:', response.status, JSON.stringify(data).slice(0, 300));
+      await refund(consumed);
       return res.status(502).json({ error: 'ai_error', status: response.status });
+    }
+    if (!isValidJsonAnswer(data)) {
+      console.error('Model returned non-JSON answer');
+      await refund(consumed);
+      return res.status(502).json({ error: 'bad_answer' });
     }
     return res.status(200).json(data);
   } catch (err) {
     console.error('Error contacting AI:', err.message);
+    await refund(consumed);
     return res.status(500).json({ error: 'Error contacting AI' });
   }
 }
