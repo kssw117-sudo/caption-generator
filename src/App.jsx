@@ -68,6 +68,38 @@ export default function CaptionGenerator() {
     return true;
   }
 
+  // Возвращаем генерацию, если попытка не удалась.
+  function refundDailyLimit() {
+    const today = new Date().toISOString().slice(0, 10);
+    let record;
+    try {
+      record = JSON.parse(localStorage.getItem(LIMIT_STORAGE_KEY) || 'null');
+    } catch (e) {
+      record = null;
+    }
+    if (!record || record.date !== today || record.count <= 0) return;
+    record.count -= 1;
+    localStorage.setItem(LIMIT_STORAGE_KEY, JSON.stringify(record));
+  }
+
+  // Уменьшаем фото перед отправкой (до 1280px по большей стороне):
+  // запрос становится в разы легче -- генерация быстрее, а большие фото с телефона не падают.
+  function shrinkImage(dataUrl, maxSide = 1280) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
   const [business, setBusiness] = useState(() => localStorage.getItem('tg_draft_business') || '');
   const [dailyCount, setDailyCount] = useState(() => getDailyCount());
   const [postAbout, setPostAbout] = useState(() => localStorage.getItem('tg_draft_postAbout') || '');
@@ -248,6 +280,19 @@ export default function CaptionGenerator() {
       }
       setDailyCount(getDailyCount());
     }
+    try {
+      return await requestGeneration(topic, isTrial);
+    } catch (err) {
+      // Неудачная попытка -- генерацию не списываем.
+      if (!isTrial) {
+        refundDailyLimit();
+        setDailyCount(getDailyCount());
+      }
+      throw err;
+    }
+  }
+
+  async function requestGeneration(topic, isTrial) {
     const platformName = platformNames[platform] || 'Instagram';
     const langInstruction = currentLang.englishName;
     const voiceInstruction = brandVoice.trim()
@@ -272,9 +317,10 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     // реально анализировал содержимое (не просто текст темы поста).
     // Если фото нет, но есть видео — используем извлечённый из него кадр
     // (Claude Vision сам видеофайлы не принимает, только изображения).
-    const imageSource = photo || videoFrame;
+    const rawImage = photo || videoFrame;
     let images;
-    if (imageSource && imageSource.startsWith('data:')) {
+    if (rawImage && rawImage.startsWith('data:')) {
+      const imageSource = await shrinkImage(rawImage);
       const [header, base64] = imageSource.split(',');
       const mediaTypeMatch = header.match(/data:([^;]+);/);
       images = [{ base64, mediaType: mediaTypeMatch ? mediaTypeMatch[1] : 'image/jpeg' }];
@@ -292,16 +338,20 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     if (response.status === 429) {
       throw new Error('limit');
     }
-
-    if (isTrial) {
-      localStorage.setItem('tg_free_trial_used', 'true');
-      setFreeTrialUsed(true);
+    if (!response.ok) {
+      throw new Error('server');
     }
 
     const data = await response.json();
     const text = data.content.map(b => b.text || '').join('');
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
+
+    // Пробную генерацию считаем использованной только после успеха.
+    if (isTrial) {
+      localStorage.setItem('tg_free_trial_used', 'true');
+      setFreeTrialUsed(true);
+    }
 
     return {
       business,
@@ -365,6 +415,7 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     setDailyCount(getDailyCount());
 
     setTranslatingIndex(index);
+    let succeeded = false;
     const prompt = `Translate the following social media captions, hashtags, and call-to-action into ${targetLang.englishName}, keeping the same tone and meaning. Respond ONLY with valid JSON, no markdown: {"captions": ["...", "...", "..."], "hashtags": ["...", ...], "cta": "..."}
 
 Captions: ${JSON.stringify(item.captions)}
@@ -394,9 +445,15 @@ CTA: ${JSON.stringify(item.cta)}`;
         ? { ...r, translations: { ...r.translations, [targetLangCode]: translated }, activeLang: targetLangCode }
         : r
       ));
+      succeeded = true;
     } catch (err) {
       setError(t.genError);
     } finally {
+      // Неудачный перевод -- генерацию не списываем.
+      if (!succeeded) {
+        refundDailyLimit();
+        setDailyCount(getDailyCount());
+      }
       setTranslatingIndex(null);
     }
   }
@@ -1025,7 +1082,7 @@ CTA: ${JSON.stringify(item.cta)}`;
             }} />
           </div>
           {dailyCount >= DAILY_LIMIT && (
-            <p className="text-xs text-center" style={{ color: '#B34B3C', marginTop: 8 }}>Today's limit reached — come back tomorrow for 50 more free generations.</p>
+            <p className="text-xs text-center" style={{ color: '#B34B3C', marginTop: 8 }}>Today's limit reached — come back tomorrow for {DAILY_LIMIT} more free generations.</p>
           )}
         </div>
 
