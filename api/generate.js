@@ -5,10 +5,10 @@
 const DAILY_LIMIT = 15;
 
 async function redis(command) {
-  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
+  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_KV_REST_API_URL}/pipeline`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(command)
@@ -63,8 +63,6 @@ export default async function handler(req, res) {
   }
 
   // Серверный лимит проверяем только для платных (не trial) запросов.
-  // Для общего ACCESS_CODE это будет ОДИН общий счётчик на всех, кто им
-  // пользуется -- см. предупреждение в чате: стоит переходить на уникальные коды.
   if (!isFreeTrial) {
     const result = await checkAndConsume(licenseCode);
     if (!result.ok) {
