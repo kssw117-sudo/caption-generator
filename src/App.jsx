@@ -34,7 +34,7 @@ async function idbSet(key, value) {
 }
 
 export default function CaptionGenerator() {
-  const DAILY_LIMIT = 50;
+  const DAILY_LIMIT = 15;
   const LIMIT_STORAGE_KEY = 'tg_daily_gens';
 
   function getDailyCount() {
@@ -289,6 +289,9 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     if (response.status === 403) {
       throw new Error('license');
     }
+    if (response.status === 429) {
+      throw new Error('limit');
+    }
 
     if (isTrial) {
       localStorage.setItem('tg_free_trial_used', 'true');
@@ -374,6 +377,14 @@ CTA: ${JSON.stringify(item.cta)}`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ licenseCode, prompt })
       });
+      if (response.status === 403) {
+        setError(t.licenseInvalid);
+        return;
+      }
+      if (response.status === 429) {
+        setError(t.limitReached || 'Daily generation limit reached. Try again tomorrow.');
+        return;
+      }
       const data = await response.json();
       const text = data.content.map(b => b.text || '').join('');
       const clean = text.replace(/```json|```/g, '').trim();
