@@ -20,7 +20,8 @@ async function resolveOffer() {
     if (!r.ok) throw new Error(`lava products http ${r.status}`);
     const data = await r.json();
     for (const item of data.items || []) {
-      const product = item.data || {};
+      // Lava отдаёт товар либо прямо в элементе списка, либо внутри item.data.
+      const product = (item.data && item.data.id) ? item.data : item;
       const offers = product.offers || [];
       const byProduct = product.id === configured;
       const byOffer = offers.find(o => o.id === configured);
@@ -70,15 +71,19 @@ export default async function handler(req, res) {
         });
         report.productsHttp = r.status;
         const data = await r.json().catch(() => ({}));
-        report.productsSeen = (data.items || []).slice(0, 30).map(item => ({
-          type: item.type,
-          title: item.data && item.data.title,
-          id: item.data && item.data.id,
-          offers: ((item.data && item.data.offers) || []).map(o => ({
-            id: o.id,
-            currencies: (o.prices || []).map(p => p.currency)
-          }))
-        }));
+        report.productsSeen = (data.items || []).slice(0, 30).map(item => {
+          const product = (item.data && item.data.id) ? item.data : item;
+          return {
+            type: item.type,
+            title: product.title,
+            id: product.id,
+            keys: Object.keys(item).slice(0, 15),
+            offers: (product.offers || []).map(o => ({
+              id: o.id,
+              currencies: (o.prices || []).map(p => p.currency)
+            }))
+          };
+        });
         report.morePages = Boolean(data.nextPage);
       } catch (err) {
         report.productsError = String(err.message).slice(0, 80);
