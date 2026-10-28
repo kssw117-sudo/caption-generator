@@ -1,15 +1,10 @@
 // api/redeem-dealfuel.js -- проверяет и активирует уникальный код DealFuel (TAG-...).
-import { redis, redeemedKey } from './_lib.js';
+// Список кодов -- файл dealfuel/codes.json в этом же репозитории.
+// Чтобы добавить коды, допиши их в этот файл и загрузи на GitHub.
+// Активации записываются в Redis (когда и с каким email), GitHub-токены больше не нужны.
+// Повторная активация того же кода разрешена: код работает как пароль покупателя.
 
-// Отмечаем код как настоящий в Redis -- по этой отметке сервер генерации
-// узнаёт, что код не выдуманный (и к нему можно докупать генерации).
-async function markRedeemed(code) {
-  try {
-    await redis([['SET', redeemedKey(code), '1']]);
-  } catch (err) {
-    console.error('Could not mark code in Redis:', err.message);
-  }
-}
+import { redis, redeemedKey, normalizeCode, uniqueCodesCount, isUniqueCode } from './_lib.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,67 +12,33 @@ export default async function handler(req, res) {
   }
 
   const { code, email } = req.body || {};
-  if (!code || typeof code !== 'string') {
-    return res.status(400).json({ error: 'Код обязателен' });
+  const normalizedCode = normalizeCode(code);
+  if (!normalizedCode) {
+    return res.status(400).json({ error: 'Please enter your code.' });
   }
-  const normalizedCode = code.trim().toUpperCase();
 
-  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_FILEPATH } = process.env;
-  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILEPATH}`;
+  if (uniqueCodesCount() === 0) {
+    console.error('Codes list is empty or missing (dealfuel/codes.json)');
+    return res.status(500).json({ error: 'Server error, please try again later.' });
+  }
 
-  const ghHeaders = {
-    Authorization: `Bearer ${GITHUB_TOKEN}`,
-    Accept: 'application/vnd.github+json',
-  };
+  if (!(await isUniqueCode(normalizedCode))) {
+    return res.status(404).json({ error: 'Code not recognized.' });
+  }
 
   try {
-    const getRes = await fetch(apiUrl, { headers: ghHeaders });
-    if (!getRes.ok) {
-      return res.status(500).json({ error: 'Не удалось прочитать список кодов' });
-    }
-    const fileData = await getRes.json();
-    const content = JSON.parse(
-      Buffer.from(fileData.content, 'base64').toString('utf-8')
-    );
-
-    const entry = content.find((c) => c.code === normalizedCode);
-    if (!entry) {
-      return res.status(404).json({ error: 'Код не найден' });
-    }
-
-    // Если код уже был активирован раньше — просто пускаем повторно.
-    // Это защищает настоящего владельца, если он потеряет доступ
-    // (очистит историю браузера, сменит устройство и т.д.) — код по сути
-    // работает как пароль, а не одноразовый ключ после первой активации.
-    if (entry.redeemed) {
-      await markRedeemed(normalizedCode);
-      return res.status(200).json({ success: true });
-    }
-
-    entry.redeemed = true;
-    entry.redeemed_at = new Date().toISOString();
-    entry.redeemed_email = email || null;
-
-    const updatedContent = Buffer.from(JSON.stringify(content, null, 2)).toString('base64');
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: { ...ghHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: `Redeem code ${normalizedCode}`,
-        content: updatedContent,
-        sha: fileData.sha,
-      }),
-    });
-
-    if (!putRes.ok) {
-      return res.status(409).json({
-        error: 'Не удалось активировать код, попробуйте ещё раз через несколько секунд',
+    const [existing] = await redis([['GET', redeemedKey(normalizedCode)]]);
+    if (!existing) {
+      const record = JSON.stringify({
+        redeemedAt: new Date().toISOString(),
+        email: typeof email === 'string' ? email.trim().slice(0, 200) : null
       });
+      await redis([['SET', redeemedKey(normalizedCode), record]]);
     }
-
-    await markRedeemed(normalizedCode);
-    return res.status(200).json({ success: true });
   } catch (err) {
-    return res.status(500).json({ error: 'Ошибка сервера, попробуйте снова' });
+    // Код настоящий -- пускаем, даже если запись активации не удалась.
+    console.error('Could not record activation:', err.message);
   }
+
+  return res.status(200).json({ success: true });
 }
