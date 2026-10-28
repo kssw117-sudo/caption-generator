@@ -8,7 +8,62 @@ import { redis, isUniqueCode, normalizeCode, getUsage } from './_lib.js';
 
 const ORDER_TTL_SECONDS = 60 * 60 * 24 * 30; // связь "счёт -> код" храним 30 дней
 
+// В LAVA_OFFER_ID можно вписать ID товара (из адреса страницы товара в Lava) --
+// сервер сам найдёт ID его цены (offer), который нужен для счёта.
+let resolvedOffer = null;
+async function resolveOffer() {
+  if (resolvedOffer) return resolvedOffer;
+  const configured = (process.env.LAVA_OFFER_ID || '').trim();
+  let url = 'https://gate.lava.top/api/v2/products?feedVisibility=ALL';
+  for (let page = 0; url && page < 10; page += 1) {
+    const r = await fetch(url, { headers: { 'X-Api-Key': process.env.LAVA_API_KEY, Accept: 'application/json' } });
+    if (!r.ok) throw new Error(`lava products http ${r.status}`);
+    const data = await r.json();
+    for (const item of data.items || []) {
+      const product = item.data || {};
+      const offers = product.offers || [];
+      const byProduct = product.id === configured;
+      const byOffer = offers.find(o => o.id === configured);
+      if (byProduct || byOffer) {
+        const offer = byOffer
+          || offers.find(o => (o.prices || []).some(p => p.currency === 'USD'))
+          || offers[0];
+        if (!offer) throw new Error('product has no price');
+        resolvedOffer = {
+          offerId: offer.id,
+          hasUsdPrice: (offer.prices || []).some(p => p.currency === 'USD')
+        };
+        return resolvedOffer;
+      }
+    }
+    url = data.nextPage || null;
+  }
+  // Не нашли в списке -- считаем, что вписан сам ID цены.
+  return { offerId: configured, hasUsdPrice: null };
+}
+
 export default async function handler(req, res) {
+  // /api/buy-credits?check=1 -- проверка настройки Lava (без секретов).
+  if (req.method === 'GET' && req.query && req.query.check) {
+    const report = {
+      lavaApiKeySet: Boolean(process.env.LAVA_API_KEY),
+      lavaOfferIdSet: Boolean(process.env.LAVA_OFFER_ID),
+      lavaWebhookKeySet: Boolean(process.env.LAVA_WEBHOOK_KEY),
+      productFound: false,
+      usdPrice: null
+    };
+    if (report.lavaApiKeySet && report.lavaOfferIdSet) {
+      try {
+        const offer = await resolveOffer();
+        report.productFound = offer.hasUsdPrice !== null;
+        report.usdPrice = offer.hasUsdPrice;
+      } catch (err) {
+        report.error = String(err.message).slice(0, 80);
+      }
+    }
+    return res.status(200).json(report);
+  }
+
   if (req.method === 'GET') {
     const code = normalizeCode(req.query && req.query.code);
     if (!(await isUniqueCode(code))) {
@@ -43,6 +98,7 @@ export default async function handler(req, res) {
   const siteUrl = `https://${req.headers.host}`;
 
   try {
+    const { offerId } = await resolveOffer();
     const lavaRes = await fetch('https://gate.lava.top/api/v3/invoice', {
       method: 'POST',
       headers: {
@@ -52,7 +108,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         email: cleanEmail,
-        offerId: process.env.LAVA_OFFER_ID,
+        offerId,
         currency: 'USD',
         buyerLanguage: 'EN',
         periodicity: 'ONE_TIME',
