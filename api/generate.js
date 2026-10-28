@@ -1,64 +1,55 @@
 // api/generate.js
-// Лимит (15/день) и докупленные токены считаются на сервере (Upstash Redis),
-// привязаны к licenseCode -- очисткой кэша/браузера не обходится.
-// Если Redis вдруг недоступен, генерация всё равно проходит (сайт не ломается).
+// Уникальные коды (TAG-...): лимит 15/день и докупленные генерации считаются на сервере
+// (Upstash Redis) -- очисткой кэша не обходится. Неудачная генерация не списывается.
+// Общий код (ACCESS_CODE): у всех покупателей он один, поэтому его лимит считается
+// в браузере каждого покупателя -- иначе все делили бы одни 15 генераций на всех.
 // Открыть /api/generate в браузере -- покажет, что работает, а что нет (без секретов).
 
-const DAILY_LIMIT = 15;
-const REDIS_URL = process.env.UPSTASH_REDIS_REST_KV_REST_API_URL;
-const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN;
+import {
+  DAILY_LIMIT, redis, redisConfigured, isSharedCode, isUniqueCode,
+  todayKey, creditsKey, uniqueCodesCount
+} from './_lib.js';
+
 // Haiku -- в несколько раз быстрее Sonnet, для капшнов и хештегов качества хватает.
 const MODEL = 'claude-haiku-4-5-20251001';
 
-async function redis(commands) {
-  const res = await fetch(`${REDIS_URL}/pipeline`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${REDIS_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(commands)
-  });
-  if (!res.ok) {
-    throw new Error(`redis http ${res.status}`);
-  }
-  const data = await res.json();
-  if (!Array.isArray(data)) {
-    throw new Error('redis bad response');
-  }
-  return data.map(item => {
-    if (item.error) throw new Error(`redis: ${item.error}`);
-    return item.result;
-  });
-}
+async function checkAndConsume(code) {
+  const limitKey = todayKey(code);
+  const credKey = creditsKey(code);
 
-async function checkAndConsume(licenseCode) {
-  const today = new Date().toISOString().slice(0, 10);
-  const limitKey = `limit:${licenseCode}:${today}`;
-  const creditsKey = `credits:${licenseCode}`;
-
-  const [count] = await redis([
+  const [count, , creditsRaw] = await redis([
     ['INCR', limitKey],
-    ['EXPIRE', limitKey, 93600]
+    ['EXPIRE', limitKey, 93600],
+    ['GET', credKey]
   ]);
-
-  if (count <= DAILY_LIMIT) {
-    return { ok: true, refundCommand: ['DECR', limitKey] };
-  }
-
-  // Дневной лимит исчерпан -- пробуем списать с докупленных токенов
-  const [creditsRaw] = await redis([['GET', creditsKey]]);
   const credits = parseInt(creditsRaw || '0', 10);
 
-  if (credits > 0) {
-    await redis([['DECR', creditsKey]]);
-    return { ok: true, refundCommand: ['INCR', creditsKey] };
+  if (count <= DAILY_LIMIT) {
+    return {
+      ok: true,
+      refundCommand: ['DECR', limitKey],
+      usage: { used: count, limit: DAILY_LIMIT, credits }
+    };
   }
 
-  return { ok: false };
+  // Дневной лимит исчерпан -- списываем докупленную генерацию.
+  // DECR атомарный: если два запроса пришли одновременно, в минус не уйдём.
+  if (credits > 0) {
+    const [left] = await redis([['DECR', credKey]]);
+    if (left >= 0) {
+      return {
+        ok: true,
+        refundCommand: ['INCR', credKey],
+        usage: { used: DAILY_LIMIT, limit: DAILY_LIMIT, credits: left }
+      };
+    }
+    await redis([['INCR', credKey]]);
+  }
+
+  return { ok: false, usage: { used: DAILY_LIMIT, limit: DAILY_LIMIT, credits: 0 } };
 }
 
-// Неудачная генерация -- возвращаем списанное (дневную генерацию или докупленный токен).
+// Неудачная генерация -- возвращаем списанное (дневную генерацию или докупленную).
 async function refund(consumed) {
   if (!consumed || !consumed.refundCommand) return;
   try {
@@ -81,10 +72,13 @@ function isValidJsonAnswer(data) {
 
 async function healthCheck(res) {
   const report = {
-    redisUrlSet: Boolean(REDIS_URL),
-    redisTokenSet: Boolean(REDIS_TOKEN),
+    redisConfigured: redisConfigured(),
     anthropicKeySet: Boolean(process.env.ANTHROPIC_API_KEY),
     accessCodeSet: Boolean(process.env.ACCESS_CODE),
+    lavaApiKeySet: Boolean(process.env.LAVA_API_KEY),
+    lavaOfferIdSet: Boolean(process.env.LAVA_OFFER_ID),
+    lavaWebhookKeySet: Boolean(process.env.LAVA_WEBHOOK_KEY),
+    uniqueCodesLoaded: uniqueCodesCount(),
     redis: 'not checked',
     anthropic: 'not checked'
   };
@@ -121,11 +115,11 @@ export default async function handler(req, res) {
 
   const { licenseCode, prompt, images, trial } = req.body || {};
 
-  const isSharedCode = licenseCode && licenseCode === process.env.ACCESS_CODE;
-  const isAppSumoCode = licenseCode && licenseCode.trim().toUpperCase().startsWith('TAG-');
+  const shared = isSharedCode(licenseCode);
+  const unique = !shared && await isUniqueCode(licenseCode);
   const isFreeTrial = trial === true;
 
-  if (!isFreeTrial && (!licenseCode || (!isSharedCode && !isAppSumoCode))) {
+  if (!isFreeTrial && !shared && !unique) {
     return res.status(403).json({ error: 'Invalid access code' });
   }
 
@@ -133,13 +127,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'No prompt provided' });
   }
 
-  // Серверный лимит -- только для платных (не trial) запросов.
+  // Серверный лимит -- только для уникальных кодов.
   let consumed = null;
-  if (!isFreeTrial) {
+  if (!isFreeTrial && unique) {
     try {
       const result = await checkAndConsume(licenseCode);
       if (!result.ok) {
-        return res.status(429).json({ error: 'limit_reached' });
+        return res.status(429).json({ error: 'limit_reached', usage: result.usage });
       }
       consumed = result;
     } catch (err) {
@@ -186,6 +180,9 @@ export default async function handler(req, res) {
       console.error('Model returned non-JSON answer');
       await refund(consumed);
       return res.status(502).json({ error: 'bad_answer' });
+    }
+    if (consumed) {
+      data._usage = consumed.usage;
     }
     return res.status(200).json(data);
   } catch (err) {
