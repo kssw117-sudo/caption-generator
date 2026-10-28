@@ -60,6 +60,29 @@ export default async function handler(req, res) {
       } catch (err) {
         report.error = String(err.message).slice(0, 80);
       }
+      // Диагностика: какие товары видит Lava по этому ключу (только названия и ID, без секретов).
+      const configured = (process.env.LAVA_OFFER_ID || '').trim();
+      report.offerIdLooksValid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(configured);
+      report.offerIdStart = configured.slice(0, 8);
+      try {
+        const r = await fetch('https://gate.lava.top/api/v2/products?feedVisibility=ALL', {
+          headers: { 'X-Api-Key': process.env.LAVA_API_KEY, Accept: 'application/json' }
+        });
+        report.productsHttp = r.status;
+        const data = await r.json().catch(() => ({}));
+        report.productsSeen = (data.items || []).slice(0, 30).map(item => ({
+          type: item.type,
+          title: item.data && item.data.title,
+          id: item.data && item.data.id,
+          offers: ((item.data && item.data.offers) || []).map(o => ({
+            id: o.id,
+            currencies: (o.prices || []).map(p => p.currency)
+          }))
+        }));
+        report.morePages = Boolean(data.nextPage);
+      } catch (err) {
+        report.productsError = String(err.message).slice(0, 80);
+      }
     }
     return res.status(200).json(report);
   }
