@@ -64,16 +64,27 @@ async function invoiceVariants() {
   }
   variants.push({ name: 'id', offerId: id });
   variants.push({ name: 'id+amount', offerId: id, amount: PACK_PRICE_USD });
-  if (workingVariant) {
-    variants.sort((a, b) => (a.name === workingVariant ? -1 : b.name === workingVariant ? 1 : 0));
-  }
   return variants;
 }
 
+// Минимальный счёт -- только обязательные поля (как в примере из документации Lava).
+const MINIMAL_FIELDS = ['email', 'currency'];
+
 async function createInvoice(baseBody) {
   const errors = [];
+  const variants = [];
   for (const v of await invoiceVariants()) {
-    const body = { ...baseBody, offerId: v.offerId };
+    variants.push(v);
+    variants.push({ ...v, name: `${v.name}-minimal`, minimal: true });
+  }
+  if (workingVariant) {
+    variants.sort((a, b) => (a.name === workingVariant ? -1 : b.name === workingVariant ? 1 : 0));
+  }
+  for (const v of variants) {
+    const source = v.minimal
+      ? Object.fromEntries(MINIMAL_FIELDS.map(k => [k, baseBody[k]]))
+      : baseBody;
+    const body = { ...source, offerId: v.offerId };
     if (v.amount) body.amount = v.amount;
     const r = await fetch(`${LAVA}/api/v3/invoice`, {
       method: 'POST',
@@ -87,6 +98,10 @@ async function createInvoice(baseBody) {
     }
     errors.push(`${v.name}: ${r.status} ${JSON.stringify(data).slice(0, 200)}`);
   }
+  // Сохраняем ответ Lava, чтобы его было видно в проверке ?check=1 (без секретов).
+  try {
+    await redis([['SET', 'lava:lasterror', JSON.stringify({ at: new Date().toISOString(), errors }), 'EX', 60 * 60 * 24 * 7]]);
+  } catch (e) { /* не критично */ }
   throw new Error(`Lava refused all invoice variants -> ${errors.join(' | ')}`);
 }
 
@@ -115,6 +130,10 @@ async function checkReport() {
     report.error = String(err.message).slice(0, 120);
   }
   report.lastWorkingVariant = workingVariant;
+  try {
+    const [lastError] = await redis([['GET', 'lava:lasterror']]);
+    report.lastLavaError = lastError ? JSON.parse(lastError) : null;
+  } catch (e) { /* не критично */ }
   return report;
 }
 
