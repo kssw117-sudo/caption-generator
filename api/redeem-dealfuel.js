@@ -1,3 +1,16 @@
+// api/redeem-dealfuel.js -- проверяет и активирует уникальный код DealFuel (TAG-...).
+import { redis, redeemedKey } from './_lib.js';
+
+// Отмечаем код как настоящий в Redis -- по этой отметке сервер генерации
+// узнаёт, что код не выдуманный (и к нему можно докупать генерации).
+async function markRedeemed(code) {
+  try {
+    await redis([['SET', redeemedKey(code), '1']]);
+  } catch (err) {
+    console.error('Could not mark code in Redis:', err.message);
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -37,6 +50,7 @@ export default async function handler(req, res) {
     // (очистит историю браузера, сменит устройство и т.д.) — код по сути
     // работает как пароль, а не одноразовый ключ после первой активации.
     if (entry.redeemed) {
+      await markRedeemed(normalizedCode);
       return res.status(200).json({ success: true });
     }
 
@@ -61,6 +75,7 @@ export default async function handler(req, res) {
       });
     }
 
+    await markRedeemed(normalizedCode);
     return res.status(200).json({ success: true });
   } catch (err) {
     return res.status(500).json({ error: 'Ошибка сервера, попробуйте снова' });
