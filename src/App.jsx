@@ -36,6 +36,8 @@ async function idbSet(key, value) {
 export default function CaptionGenerator() {
   const DAILY_LIMIT = 15;
   const LIMIT_STORAGE_KEY = 'tg_daily_gens';
+  const CREDITS_PER_PACK = 30;
+  const CREDITS_PRICE_LABEL = '$5';
 
   function getDailyCount() {
     const today = new Date().toISOString().slice(0, 10);
@@ -126,6 +128,13 @@ export default function CaptionGenerator() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showHelpBubble, setShowHelpBubble] = useState(false);
   const [licenseError, setLicenseError] = useState('');
+  // Докупка генераций (только для уникальных кодов TAG-...)
+  const [serverUsage, setServerUsage] = useState(null); // { used, limit, credits }
+  const [buyEmail, setBuyEmail] = useState(() => localStorage.getItem('tg_buy_email') || '');
+  const [buying, setBuying] = useState(false);
+  const [buyError, setBuyError] = useState('');
+  const [creditsNotice, setCreditsNotice] = useState('');
+  const isUniqueCode = unlocked && (licenseCode || '').trim().toUpperCase().startsWith('TAG-');
 
   // Лёгкий "поп"-звук для открытия/закрытия окошка подсказки —
   // генерируется прямо в браузере, никакие аудиофайлы не нужны
@@ -191,6 +200,80 @@ export default function CaptionGenerator() {
       if (results.length > 0) localStorage.setItem('tg_draft_results', JSON.stringify(results));
     } catch (e) { /* превышена квота — пропускаем */ }
   }, [results]);
+
+  // Сколько генераций осталось по коду (с сервера).
+  async function refreshUsage() {
+    if (!isUniqueCode) return null;
+    try {
+      const r = await fetch(`/api/buy-credits?code=${encodeURIComponent(licenseCode.trim())}`);
+      if (!r.ok) return null;
+      const usage = await r.json();
+      setServerUsage(usage);
+      return usage;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  useEffect(() => { refreshUsage(); }, [isUniqueCode, licenseCode]);
+
+  // Возврат со страницы оплаты Lava.top.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('credits');
+    if (!status) return;
+    window.history.replaceState({}, '', window.location.pathname);
+    if (status === 'failed') {
+      setCreditsNotice('Payment did not go through. You were not charged — try again.');
+      return;
+    }
+    setCreditsNotice('Payment received! Your extra generations will appear in a few seconds.');
+    // Уведомление об оплате приходит не мгновенно -- проверяем баланс несколько раз.
+    let tries = 0;
+    let lastCredits = null;
+    const timer = setInterval(async () => {
+      tries += 1;
+      const usage = await refreshUsage();
+      if (usage && lastCredits !== null && usage.credits > lastCredits) {
+        setCreditsNotice(`Done! You have ${usage.credits} extra generations.`);
+        clearInterval(timer);
+      } else if (usage && lastCredits === null && usage.credits > 0) {
+        setCreditsNotice(`Done! You have ${usage.credits} extra generations.`);
+        clearInterval(timer);
+      }
+      if (usage) lastCredits = usage.credits;
+      if (tries >= 10) clearInterval(timer);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  async function handleBuyCredits() {
+    setBuyError('');
+    const email = buyEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setBuyError('Enter a valid email for the receipt.');
+      return;
+    }
+    localStorage.setItem('tg_buy_email', email);
+    setBuying(true);
+    try {
+      const r = await fetch('/api/buy-credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ licenseCode: licenseCode.trim(), email })
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok || !data.paymentUrl) {
+        throw new Error(data.error || 'payment_error');
+      }
+      window.location.href = data.paymentUrl;
+    } catch (e) {
+      setBuyError(e.message === 'invalid_email'
+        ? 'Enter a valid email for the receipt.'
+        : 'Could not open the payment page. Please try again.');
+      setBuying(false);
+    }
+  }
 
   useEffect(() => {
     if (window.location.search.includes('welcome=1')) {
@@ -273,7 +356,9 @@ export default function CaptionGenerator() {
     if (!unlocked && freeTrialUsed) {
       throw new Error('license');
     }
-    if (!isTrial) {
+    // Уникальный код -- лимит считает сервер. Общий код -- лимит в браузере.
+    const usesLocalLimit = !isTrial && !isUniqueCode;
+    if (usesLocalLimit) {
       if (!checkAndUseDailyLimit()) {
         setDailyCount(DAILY_LIMIT);
         throw new Error('limit');
@@ -284,7 +369,7 @@ export default function CaptionGenerator() {
       return await requestGeneration(topic, isTrial);
     } catch (err) {
       // Неудачная попытка -- генерацию не списываем.
-      if (!isTrial) {
+      if (usesLocalLimit) {
         refundDailyLimit();
         setDailyCount(getDailyCount());
       }
@@ -336,6 +421,8 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
       throw new Error('license');
     }
     if (response.status === 429) {
+      const limitData = await response.json().catch(() => ({}));
+      if (limitData.usage) setServerUsage(limitData.usage);
       throw new Error('limit');
     }
     if (!response.ok) {
@@ -343,6 +430,7 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     }
 
     const data = await response.json();
+    if (data._usage) setServerUsage(data._usage);
     const text = data.content.map(b => b.text || '').join('');
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
@@ -407,12 +495,15 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     const targetLang = languages.find(l => l.code === targetLangCode);
     if (!targetLang) return;
 
-    if (!checkAndUseDailyLimit()) {
-      setDailyCount(DAILY_LIMIT);
-      setError(t.limitReached || 'Daily generation limit reached. Try again tomorrow.');
-      return;
+    const usesLocalLimit = !isUniqueCode;
+    if (usesLocalLimit) {
+      if (!checkAndUseDailyLimit()) {
+        setDailyCount(DAILY_LIMIT);
+        setError(t.limitReached || 'Daily generation limit reached. Try again tomorrow.');
+        return;
+      }
+      setDailyCount(getDailyCount());
     }
-    setDailyCount(getDailyCount());
 
     setTranslatingIndex(index);
     let succeeded = false;
@@ -433,10 +524,16 @@ CTA: ${JSON.stringify(item.cta)}`;
         return;
       }
       if (response.status === 429) {
+        const limitData = await response.json().catch(() => ({}));
+        if (limitData.usage) setServerUsage(limitData.usage);
         setError(t.limitReached || 'Daily generation limit reached. Try again tomorrow.');
         return;
       }
+      if (!response.ok) {
+        throw new Error('server');
+      }
       const data = await response.json();
+      if (data._usage) setServerUsage(data._usage);
       const text = data.content.map(b => b.text || '').join('');
       const clean = text.replace(/```json|```/g, '').trim();
       const translated = JSON.parse(clean);
@@ -450,7 +547,7 @@ CTA: ${JSON.stringify(item.cta)}`;
       setError(t.genError);
     } finally {
       // Неудачный перевод -- генерацию не списываем.
-      if (!succeeded) {
+      if (!succeeded && usesLocalLimit) {
         refundDailyLimit();
         setDailyCount(getDailyCount());
       }
@@ -1069,22 +1166,67 @@ CTA: ${JSON.stringify(item.cta)}`;
           </div>
         )}
 
-        <div style={{ maxWidth: 480, margin: '0 auto 16px' }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
-            <span className="text-xs" style={{ color: '#87837A' }}>Today's free generations</span>
-            <span className="text-xs" style={{ color: '#87837A', fontWeight: 600 }}>{DAILY_LIMIT - dailyCount}/{DAILY_LIMIT} left</span>
-          </div>
-          <div style={{ height: 4, borderRadius: 999, background: '#E4E1D6', overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', borderRadius: 999, width: `${(dailyCount / DAILY_LIMIT) * 100}%`,
-              background: dailyCount >= DAILY_LIMIT ? '#B34B3C' : '#D97757',
-              transition: 'width 0.3s ease',
-            }} />
-          </div>
-          {dailyCount >= DAILY_LIMIT && (
-            <p className="text-xs text-center" style={{ color: '#B34B3C', marginTop: 8 }}>Today's limit reached — come back tomorrow for {DAILY_LIMIT} more free generations.</p>
-          )}
-        </div>
+        {(() => {
+          // Уникальный код -- цифры с сервера; общий код -- из браузера.
+          const used = isUniqueCode && serverUsage ? serverUsage.used : dailyCount;
+          const credits = isUniqueCode && serverUsage ? serverUsage.credits : 0;
+          const reached = used >= DAILY_LIMIT && credits <= 0;
+          return (
+            <div style={{ maxWidth: 480, margin: '0 auto 16px' }}>
+              {creditsNotice && (
+                <p className="text-xs text-center" style={{ color: '#D97757', fontWeight: 600, marginBottom: 8 }}>{creditsNotice}</p>
+              )}
+              <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
+                <span className="text-xs" style={{ color: '#87837A' }}>Today's free generations</span>
+                <span className="text-xs" style={{ color: '#87837A', fontWeight: 600 }}>
+                  {Math.max(DAILY_LIMIT - used, 0)}/{DAILY_LIMIT} left{credits > 0 ? ` + ${credits} extra` : ''}
+                </span>
+              </div>
+              <div style={{ height: 4, borderRadius: 999, background: '#E4E1D6', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', borderRadius: 999, width: `${Math.min(used / DAILY_LIMIT, 1) * 100}%`,
+                  background: reached ? '#B34B3C' : '#D97757',
+                  transition: 'width 0.3s ease',
+                }} />
+              </div>
+              {reached && (
+                <p className="text-xs text-center" style={{ color: '#B34B3C', marginTop: 8 }}>
+                  Today's limit reached — come back tomorrow for {DAILY_LIMIT} more free generations{isUniqueCode ? ', or get more now.' : '.'}
+                </p>
+              )}
+              {isUniqueCode && (
+                <div style={{ marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid #E4E1D6', background: reached ? '#FAF9F4' : 'transparent' }}>
+                  <p className="text-xs" style={{ color: '#2D2A26', fontWeight: 600, marginBottom: 8 }}>
+                    Need more? Get {CREDITS_PER_PACK} extra generations for {CREDITS_PRICE_LABEL}
+                  </p>
+                  <p className="text-xs" style={{ color: '#87837A', marginBottom: 8 }}>
+                    Extra generations never expire and are used only after your daily free ones run out.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={buyEmail}
+                      onChange={e => setBuyEmail(e.target.value)}
+                      placeholder="Email for the receipt"
+                      className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      style={{ border: '1px solid #E4E1D6', background: '#FFFFFF', color: '#2D2A26', minWidth: 0 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleBuyCredits}
+                      disabled={buying}
+                      className="rounded-lg px-4 py-2 text-sm font-medium"
+                      style={{ background: buying ? '#E4E1D6' : 'linear-gradient(90deg, #D97757, #BD5D3A)', color: buying ? '#87837A' : '#F5F4EE', whiteSpace: 'nowrap' }}
+                    >
+                      {buying ? 'Opening…' : `Buy ${CREDITS_PRICE_LABEL}`}
+                    </button>
+                  </div>
+                  {buyError && <p className="text-xs" style={{ color: '#B34B3C', marginTop: 6 }}>{buyError}</p>}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         <div className="flex flex-col items-center justify-center gap-1.5 mt-10 pt-6" style={{ borderTop: '1px solid #E4E1D6' }}>
           <div className="flex items-center gap-1.5">
