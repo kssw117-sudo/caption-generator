@@ -87,7 +87,7 @@
 
     try {
       if (code.toUpperCase().startsWith('TAG-')) {
-        const res = await fetch('/api/redeem-appsumo', {
+        const res = await fetch('/api/redeem-dealfuel', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code })
