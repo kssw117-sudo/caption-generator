@@ -8,7 +8,6 @@
 import { redis, isUniqueCode, normalizeCode, getUsage } from './_lib.js';
 
 const ORDER_TTL_SECONDS = 60 * 60 * 24 * 30; // связь "счёт -> код" храним 30 дней
-const PACK_PRICE_USD = 5;
 const LAVA = 'https://gate.lava.top';
 
 function lavaHeaders() {
@@ -48,61 +47,57 @@ async function findProduct() {
   return null;
 }
 
-// Варианты счёта по очереди: Lava по-разному принимает ID цены и ID товара,
-// поэтому пробуем все и запоминаем тот, что сработал.
-let workingVariant = null;
-async function invoiceVariants() {
-  const id = configuredId();
-  const variants = [];
+// ID цены (offer) для счёта. Ищем его по ID товара один раз и запоминаем в Redis,
+// чтобы покупатель не ждал лишних запросов к Lava.
+const OFFER_CACHE_KEY = 'lava:offerid';
+
+async function getOfferId() {
   try {
-    const product = await findProduct();
-    const offers = (product && product.offers) || [];
-    const usdOffer = offers.find(o => (o.prices || []).some(p => p.currency === 'USD')) || offers[0];
-    if (usdOffer && usdOffer.id !== id) variants.push({ name: 'offer', offerId: usdOffer.id });
-  } catch (err) {
-    console.error('Lava product lookup failed:', err.message);
-  }
-  variants.push({ name: 'id', offerId: id });
-  variants.push({ name: 'id+amount', offerId: id, amount: PACK_PRICE_USD });
-  return variants;
+    const [cached] = await redis([['GET', OFFER_CACHE_KEY]]);
+    if (cached) return cached;
+  } catch (e) { /* без кэша -- просто спросим Lava */ }
+
+  const product = await findProduct();
+  const offers = (product && product.offers) || [];
+  const usdOffer = offers.find(o => (o.prices || []).some(p => p.currency === 'USD')) || offers[0];
+  const offerId = usdOffer ? usdOffer.id : configuredId();
+  try {
+    await redis([['SET', OFFER_CACHE_KEY, offerId, 'EX', 60 * 60 * 24]]);
+  } catch (e) { /* не критично */ }
+  return offerId;
 }
 
-// Минимальный счёт -- только обязательные поля (как в примере из документации Lava).
-const MINIMAL_FIELDS = ['email', 'currency'];
+class EmailRejectedError extends Error {}
+
+async function saveLastError(entry) {
+  try {
+    await redis([['SET', 'lava:lasterror', JSON.stringify({ at: new Date().toISOString(), ...entry }), 'EX', 60 * 60 * 24 * 7]]);
+  } catch (e) { /* не критично */ }
+}
 
 async function createInvoice(baseBody) {
-  const errors = [];
-  const variants = [];
-  for (const v of await invoiceVariants()) {
-    variants.push(v);
-    variants.push({ ...v, name: `${v.name}-minimal`, minimal: true });
+  const offerId = await getOfferId();
+  const r = await fetch(`${LAVA}/api/v3/invoice`, {
+    method: 'POST',
+    headers: lavaHeaders(),
+    body: JSON.stringify({ ...baseBody, offerId })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (r.ok && data.id && data.paymentUrl) {
+    return data;
   }
-  if (workingVariant) {
-    variants.sort((a, b) => (a.name === workingVariant ? -1 : b.name === workingVariant ? 1 : 0));
+
+  // Ответ Lava сохраняем -- его видно в проверке ?check=1 (без секретов).
+  await saveLastError({ status: r.status, response: JSON.stringify(data).slice(0, 300) });
+
+  if (r.status === 404) {
+    // Цена не найдена (например, товар изменили) -- в следующий раз найдём заново.
+    await redis([['DEL', OFFER_CACHE_KEY]]).catch(() => {});
   }
-  for (const v of variants) {
-    const source = v.minimal
-      ? Object.fromEntries(MINIMAL_FIELDS.map(k => [k, baseBody[k]]))
-      : baseBody;
-    const body = { ...source, offerId: v.offerId };
-    if (v.amount) body.amount = v.amount;
-    const r = await fetch(`${LAVA}/api/v3/invoice`, {
-      method: 'POST',
-      headers: lavaHeaders(),
-      body: JSON.stringify(body)
-    });
-    const data = await r.json().catch(() => ({}));
-    if (r.ok && data.id && data.paymentUrl) {
-      workingVariant = v.name;
-      return data;
-    }
-    errors.push(`${v.name}: ${r.status} ${JSON.stringify(data).slice(0, 200)}`);
+  if (/email/i.test(String(data.error || ''))) {
+    throw new EmailRejectedError('email rejected by Lava');
   }
-  // Сохраняем ответ Lava, чтобы его было видно в проверке ?check=1 (без секретов).
-  try {
-    await redis([['SET', 'lava:lasterror', JSON.stringify({ at: new Date().toISOString(), errors }), 'EX', 60 * 60 * 24 * 7]]);
-  } catch (e) { /* не критично */ }
-  throw new Error(`Lava refused all invoice variants -> ${errors.join(' | ')}`);
+  throw new Error(`Lava invoice http ${r.status}`);
 }
 
 async function checkReport() {
@@ -129,7 +124,10 @@ async function checkReport() {
   } catch (err) {
     report.error = String(err.message).slice(0, 120);
   }
-  report.lastWorkingVariant = workingVariant;
+  try {
+    const [cachedOffer] = await redis([['GET', OFFER_CACHE_KEY]]);
+    report.cachedOfferId = cachedOffer ? cachedOffer.slice(0, 8) : null;
+  } catch (e) { /* не критично */ }
   try {
     const [lastError] = await redis([['GET', 'lava:lasterror']]);
     report.lastLavaError = lastError ? JSON.parse(lastError) : null;
@@ -193,6 +191,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ paymentUrl: invoice.paymentUrl });
   } catch (err) {
     console.error('Buy credits failed:', err.message);
+    if (err instanceof EmailRejectedError) {
+      return res.status(400).json({ error: 'invalid_email' });
+    }
     return res.status(502).json({ error: 'payment_error' });
   }
 }
