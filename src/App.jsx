@@ -201,6 +201,27 @@ export default function CaptionGenerator() {
     } catch (e) { /* превышена квота — пропускаем */ }
   }, [results]);
 
+  // Счётчик посещений и действий (без личных данных) -- чтобы видеть, где теряются покупатели.
+  function track(event) {
+    try {
+      const body = JSON.stringify({ event });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', new Blob([body], { type: 'application/json' }));
+      } else {
+        fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true });
+      }
+    } catch (e) { /* счётчик не должен мешать сайту */ }
+  }
+
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem('tg_visit_tracked')) {
+        sessionStorage.setItem('tg_visit_tracked', '1');
+        track('visit');
+      }
+    } catch (e) { track('visit'); }
+  }, []);
+
   // Сколько генераций осталось по коду (с сервера).
   async function refreshUsage() {
     if (!isUniqueCode) return null;
@@ -248,6 +269,7 @@ export default function CaptionGenerator() {
   }, []);
 
   async function handleBuyCredits() {
+    track('credits_buy_click');
     setBuyError('');
     const email = buyEmail.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -391,12 +413,16 @@ export default function CaptionGenerator() {
       ? 'A frame extracted from the uploaded video is attached. Look at it closely and base the captions on what is actually visible (colors, objects, setting, mood) -- do not write generic copy that ignores it.'
       : '';
 
+    // Instagram разрешает максимум 5 хештегов на пост, остальным платформам даём 8.
+    const hashtagCount = platform === 'instagram' ? 5 : 8;
+    const hashtagExample = Array.from({ length: hashtagCount }, (_, i) => `"tag${i + 1}"`).join(', ');
+
     const prompt = `You are a social media copywriter for small businesses. Business: "${business}". Post topic: "${topic}". Platform: ${platformName}. Write in ${langInstruction}. ${voiceInstruction} ${emojiInstruction} ${lengthInstruction} ${photoInstruction}
 
 Respond ONLY with valid JSON, no markdown, no code fences, in this exact shape:
-{"captions": ["caption option 1", "caption option 2", "caption option 3"], "hashtags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8"], "cta": "one short call-to-action line"}
+{"captions": ["caption option 1", "caption option 2", "caption option 3"], "hashtags": [${hashtagExample}], "cta": "one short call-to-action line"}
 
-Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtags should be relevant to the business niche and platform, without the # symbol, lowercase, no spaces. The call-to-action line should be short and platform-appropriate (e.g. "Order via WhatsApp" style).`;
+Captions must stay under ${platformLimits[platform] || 2200} characters. Give exactly ${hashtagCount} hashtags. Hashtags should be relevant to the business niche and platform, without the # symbol, lowercase, no spaces. The call-to-action line should be short and platform-appropriate (e.g. "Order via WhatsApp" style).`;
 
     // Если есть фото — отправляем его вместе с промптом, чтобы Claude
     // реально анализировал содержимое (не просто текст темы поста).
@@ -434,6 +460,7 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
     const text = data.content.map(b => b.text || '').join('');
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
+    track(isTrial ? 'trial' : 'generation');
 
     // Пробную генерацию считаем использованной только после успеха.
     if (isTrial) {
@@ -445,7 +472,8 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
       business,
       topic,
       captions: parsed.captions,
-      hashtags: parsed.hashtags,
+      // На случай, если модель всё же вернёт больше: для Instagram оставляем 5.
+      hashtags: platform === 'instagram' ? (parsed.hashtags || []).slice(0, 5) : parsed.hashtags,
       cta: parsed.cta || '',
       activeCaption: 0,
       translations: {},
@@ -480,6 +508,7 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Hashtag
         setUnlocked(false);
         setLicenseError(t.licenseInvalid);
       } else if (err.message === 'limit') {
+        track('limit_reached');
         setError(t.limitReached || 'Daily generation limit reached. Try again tomorrow.');
       } else {
         setError(t.genError);
@@ -711,12 +740,13 @@ CTA: ${JSON.stringify(item.cta)}`;
                   <p className="text-sm" style={{ color: '#8A4A38', margin: '0 0 10px', fontWeight: 600 }}>Your free preview is over. Enter your code whenever you're ready to keep going.</p>
                   <a
                     href="/unlock.html"
+                    onClick={() => track('unlock_click')}
                     className="inline-block font-medium px-4 py-2 rounded-lg text-sm"
                     style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE', textDecoration: 'none' }}
                   >
                     Enter your code →
                   </a>
-                  <a href="/buy.html" className="block text-xs mt-2" style={{ color: '#A56A45' }}>{t.noCodeText}</a>
+                  <a href="/buy.html" onClick={() => track('buy_page_click')} className="block text-xs mt-2" style={{ color: '#A56A45' }}>{t.noCodeText}</a>
                 </div>
               </div>
             ) : (
