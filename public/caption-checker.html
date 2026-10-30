@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Free Caption Length & Hashtag Checker (Instagram 5-Hashtag Limit) | TagGenerator AI</title>
+  <meta name="description" content="Free caption checker for Instagram, TikTok, X, Threads, LinkedIn, Facebook, Pinterest and YouTube Shorts. Counts characters and hashtags, flags Instagram's new 5-hashtag limit, and shows what appears before 'more'." />
+  <link rel="canonical" href="https://taggenerator.plainwork.website/tools/caption-checker.html" />
+  <meta property="og:title" content="Free Caption Length & Hashtag Checker" />
+  <meta property="og:description" content="Check your caption against every platform's character and hashtag limits, including Instagram's new 5-hashtag rule." />
+  <meta property="og:url" content="https://taggenerator.plainwork.website/tools/caption-checker.html" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F5F4EE; --card: #FFFFFF; --soft: #FAF9F4; --line: #E4E1D6;
+      --text: #2D2A26; --muted: #6B6659; --faint: #87837A;
+      --accent: #D97757; --accent2: #BD5D3A; --bad: #B34B3C; --ok: #4E7A4A;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; line-height: 1.55; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
+    a { color: var(--accent2); }
+    h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(28px, 6vw, 40px); line-height: 1.15; margin: 8px 0 12px; }
+    h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; margin: 40px 0 12px; }
+    .lead { color: var(--muted); font-size: 17px; margin: 0 0 24px; }
+    .crumb { font-size: 13px; color: var(--faint); text-decoration: none; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+    textarea { width: 100%; min-height: 180px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; padding: 14px; font: inherit; font-size: 16px; color: var(--text); background: var(--soft); }
+    textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .stats { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 6px; }
+    .stat { background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 14px; color: var(--muted); }
+    .stat b { color: var(--text); font-size: 16px; }
+    .preview { margin-top: 14px; font-size: 14px; color: var(--muted); }
+    .preview .box { margin-top: 6px; padding: 10px 12px; border-radius: 10px; background: var(--soft); border: 1px dashed var(--line); color: var(--text); white-space: pre-wrap; word-break: break-word; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--faint); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .pill.ok { background: #E7F0E5; color: var(--ok); }
+    .pill.bad { background: #F6E3DF; color: var(--bad); }
+    .pill.warn { background: #FBEEDD; color: #9A6420; }
+    .bar { height: 4px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 6px; }
+    .bar > span { display: block; height: 100%; background: var(--accent); }
+    .cta { margin-top: 28px; padding: 22px; border-radius: 16px; background: linear-gradient(135deg, #FBF1EB, #F5F4EE); border: 1px solid #EBD3C6; }
+    .cta h3 { font-family: 'Fraunces', serif; font-size: 21px; margin: 0 0 8px; }
+    .cta p { margin: 0 0 14px; color: var(--muted); }
+    .btn { display: inline-block; background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #F5F4EE; text-decoration: none; padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 15px; }
+    .faq p { margin: 4px 0 18px; color: var(--muted); }
+    .faq b { display: block; color: var(--text); }
+    footer { margin-top: 48px; font-size: 13px; color: var(--faint); text-align: center; }
+    @media (max-width: 520px) { #check th:nth-child(3), #check td:nth-child(3) { display: none; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <a class="crumb" href="https://taggenerator.plainwork.website/">← TagGenerator AI</a>
+    <h1>Free Caption Length &amp; Hashtag Checker</h1>
+    <p class="lead">Paste your caption to check it against the character and hashtag limits of Instagram, TikTok, X, Threads, LinkedIn, Facebook, Pinterest and YouTube Shorts. It also flags Instagram's new 5-hashtag limit and shows what people see before they tap "more".</p>
+
+    <div class="card">
+      <label for="caption" style="font-weight:600;font-size:14px;">Your caption</label>
+      <textarea id="caption" placeholder="Paste or type your caption here, hashtags included…"></textarea>
+      <div class="stats">
+        <div class="stat">Characters: <b id="chars">0</b></div>
+        <div class="stat">Words: <b id="words">0</b></div>
+        <div class="stat">Hashtags: <b id="tags">0</b></div>
+        <div class="stat">Lines: <b id="lines">0</b></div>
+      </div>
+      <div class="preview">What shows before "more" on Instagram (about 125 characters):
+        <div class="box" id="preview">Start typing to see the preview.</div>
+      </div>
+
+      <table id="check" aria-label="Platform limits check">
+        <thead><tr><th>Platform</th><th>Characters</th><th>Limit</th><th>Status</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="cta">
+      <h3>Don't want to write captions at all?</h3>
+      <p>TagGenerator AI looks at your actual photo or video and writes three ready-to-post captions, hashtags and a call to action for any platform, already within the limits. One free try, no sign-up.</p>
+      <a class="btn" href="https://taggenerator.plainwork.website/">Write my caption from a photo →</a>
+    </div>
+
+    <h2>Caption limits by platform (2026)</h2>
+    <table>
+      <thead><tr><th>Platform</th><th>Max characters</th><th>Good to know</th></tr></thead>
+      <tbody>
+        <tr><td>Instagram</td><td>2,200</td><td>Up to 5 hashtags per post. Only about the first 125 characters show before "more".</td></tr>
+        <tr><td>TikTok</td><td>2,200</td><td>Hashtags count toward the limit.</td></tr>
+        <tr><td>X (Twitter)</td><td>280</td><td>Free accounts. Links and some emoji count as more than one character.</td></tr>
+        <tr><td>Threads</td><td>500</td><td>Short, conversational posts work best.</td></tr>
+        <tr><td>LinkedIn</td><td>3,000</td><td>The feed cuts posts after a few lines, so lead with the hook.</td></tr>
+        <tr><td>Facebook</td><td>63,206</td><td>Shorter posts usually get more engagement.</td></tr>
+        <tr><td>Pinterest</td><td>500</td><td>Pin description. Keywords help pins show up in search.</td></tr>
+        <tr><td>YouTube Shorts</td><td>100</td><td>Title length.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>FAQ</h2>
+    <div class="faq">
+      <p><b>How many hashtags can I use on Instagram now?</b>Instagram now allows up to 5 hashtags per post and Reel. Pick a few specific, relevant ones instead of long lists.</p>
+      <p><b>Do hashtags count toward the character limit?</b>Yes. On every platform, hashtags, spaces, line breaks and emoji all count as part of your caption.</p>
+      <p><b>Why is my count slightly different from the app?</b>Some platforms count certain emoji and links differently. Treat this checker as a close estimate and leave a little room under the limit.</p>
+      <p><b>Is this checker free?</b>Yes, completely free, and nothing you type leaves your browser.</p>
+    </div>
+
+    <footer>Made by <a href="https://www.plainwork.website/">Plainwork</a> · <a href="https://taggenerator.plainwork.website/">TagGenerator AI</a></footer>
+  </main>
+
+  <script>
+    const PLATFORMS = [
+      { name: 'Instagram', limit: 2200, tags: 5 },
+      { name: 'TikTok', limit: 2200 },
+      { name: 'X (free)', limit: 280 },
+      { name: 'Threads', limit: 500 },
+      { name: 'LinkedIn', limit: 3000 },
+      { name: 'Facebook', limit: 63206 },
+      { name: 'Pinterest', limit: 500 },
+      { name: 'YouTube Shorts title', limit: 100 }
+    ];
+    const input = document.getElementById('caption');
+    const fmt = n => n.toLocaleString('en-US');
+
+    function countChars(text) {
+      // Counts visible symbols (emoji = 1), close to how most apps count.
+      if (window.Intl && Intl.Segmenter) {
+        return [...new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(text)].length;
+      }
+      return [...text].length;
+    }
+
+    function update() {
+      const text = input.value;
+      const chars = countChars(text);
+      const words = (text.trim().match(/\S+/g) || []).length;
+      const tags = (text.match(/#[\p{L}\p{N}_]+/gu) || []).length;
+      const lines = text ? text.split('\n').length : 0;
+      document.getElementById('chars').textContent = fmt(chars);
+      document.getElementById('words').textContent = fmt(words);
+      document.getElementById('tags').textContent = fmt(tags);
+      document.getElementById('lines').textContent = fmt(lines);
+
+      const graphemes = window.Intl && Intl.Segmenter
+        ? [...new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(text)].map(s => s.segment)
+        : [...text];
+      const preview = graphemes.slice(0, 125).join('');
+      document.getElementById('preview').textContent = text
+        ? preview + (graphemes.length > 125 ? '… more' : '')
+        : 'Start typing to see the preview.';
+
+      const rows = PLATFORMS.map(p => {
+        const over = chars > p.limit;
+        const tooManyTags = p.tags && tags > p.tags;
+        const pct = Math.min(chars / p.limit, 1) * 100;
+        let status = '<span class="pill ok">Fits</span>';
+        if (over) status = `<span class="pill bad">${fmt(chars - p.limit)} over</span>`;
+        else if (tooManyTags) status = `<span class="pill warn">${tags - p.tags} hashtag${tags - p.tags > 1 ? 's' : ''} too many</span>`;
+        else if (chars > p.limit * 0.9) status = '<span class="pill warn">Close to limit</span>';
+        return `<tr><td>${p.name}</td><td>${fmt(chars)}<div class="bar"><span style="width:${pct}%;${over ? 'background:#B34B3C' : ''}"></span></div></td><td>${fmt(p.limit)}${p.tags ? ` · ${p.tags} tags` : ''}</td><td>${status}</td></tr>`;
+      }).join('');
+      document.getElementById('rows').innerHTML = rows;
+    }
+
+    input.addEventListener('input', update);
+    update();
+  </script>
+</body>
+</html>
