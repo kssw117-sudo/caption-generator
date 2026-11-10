@@ -33,7 +33,60 @@ async function idbSet(key, value) {
   } catch (e) { /* тихо игнорируем — видео просто не сохранится черновиком */ }
 }
 
-export default function CaptionGenerator() {
+// Приводим результат к безопасному виду: captions и hashtags всегда массивы.
+// Если модель вернула неполный ответ, страница не падает в белый экран.
+function asList(v) {
+  if (Array.isArray(v)) return v.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim());
+  if (typeof v === 'string' && v.trim()) return v.split(/[\n,]+/).map(x => x.trim()).filter(Boolean);
+  return [];
+}
+function normalizePart(p) {
+  const o = p && typeof p === 'object' ? p : {};
+  return { ...o, captions: asList(o.captions), hashtags: asList(o.hashtags).map(h => h.replace(/^#+/, '')), cta: typeof o.cta === 'string' ? o.cta : '' };
+}
+function normalizeResult(r) {
+  const base = normalizePart(r);
+  const translations = {};
+  if (r && r.translations && typeof r.translations === 'object') {
+    for (const k of Object.keys(r.translations)) translations[k] = normalizePart(r.translations[k]);
+  }
+  const activeLang = r && r.activeLang && translations[r.activeLang] ? r.activeLang : null;
+  const activeCaption = Number.isInteger(r && r.activeCaption) && r.activeCaption < base.captions.length ? r.activeCaption : 0;
+  return { ...base, business: (r && r.business) || '', topic: (r && r.topic) || '', translations, activeLang, activeCaption };
+}
+
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { failed: false }; }
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() {
+    // Сбрасываем сохранённые результаты, из-за которых мог упасть экран, и перезагружаем один раз.
+    try {
+      localStorage.removeItem('tg_draft_results');
+      localStorage.removeItem('tg_draft_history');
+      if (!sessionStorage.getItem('tg_recovered')) {
+        sessionStorage.setItem('tg_recovered', '1');
+        window.location.reload();
+      }
+    } catch (e) { /* ignore */ }
+  }
+  render() {
+    if (this.state.failed) {
+      return (
+        <div style={{ padding: 32, fontFamily: 'sans-serif', textAlign: 'center' }}>
+          <p>Something went wrong. Please reload the page.</p>
+          <button onClick={() => window.location.reload()} style={{ marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #D97757', background: '#fff', color: '#D97757' }}>Reload</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function App() {
+  return <ErrorBoundary><CaptionGenerator /></ErrorBoundary>;
+}
+
+function CaptionGenerator() {
   const DAILY_LIMIT = 15;
   const LIMIT_STORAGE_KEY = 'tg_daily_gens';
   const CREDITS_PER_PACK = 30;
@@ -110,7 +163,21 @@ export default function CaptionGenerator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState('');
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('tg_draft_history') || '[]');
+      if (!Array.isArray(saved)) return [];
+      return saved.map(h => ({
+        business: (h && h.business) || '',
+        platform: (h && h.platform) || '',
+        results: Array.isArray(h && h.results) ? h.results.map(normalizeResult) : []
+      })).filter(h => h.results.length > 0).slice(0, 5);
+    } catch (e) { return []; }
+  });
+  // История последних генераций сохраняется в браузере и не пропадает при обновлении страницы.
+  useEffect(() => {
+    try { localStorage.setItem('tg_draft_history', JSON.stringify(history)); } catch (e) { /* квота -- пропускаем */ }
+  }, [history]);
   const [photo, setPhoto] = useState(null);
   const [video, setVideo] = useState(null);
   const [videoFrame, setVideoFrame] = useState(null);
@@ -168,7 +235,7 @@ export default function CaptionGenerator() {
       const savedPhoto = localStorage.getItem('tg_draft_photo');
       if (savedPhoto) setPhoto(savedPhoto);
       const savedResults = localStorage.getItem('tg_draft_results');
-      if (savedResults) setResults(JSON.parse(savedResults));
+      if (savedResults) { const arr = JSON.parse(savedResults); if (Array.isArray(arr)) setResults(arr.map(normalizeResult)); }
     } catch (e) { /* повреждённые данные — просто игнорируем */ }
     idbGet('video').then(v => { if (v) setVideo(v); });
     idbGet('videoFrame').then(f => { if (f) setVideoFrame(f); });
@@ -444,6 +511,8 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Give ex
     });
 
     if (response.status === 403) {
+      const denied = await response.json().catch(() => ({}));
+      if (denied.error === 'trial_used') throw new Error('trial_used');
       throw new Error('license');
     }
     if (response.status === 429) {
@@ -460,6 +529,8 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Give ex
     const text = data.content.map(b => b.text || '').join('');
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
+    const safe = normalizePart(parsed);
+    if (safe.captions.length === 0) throw new Error('empty');
     track(isTrial ? 'trial' : 'generation');
 
     // Пробную генерацию считаем использованной только после успеха.
@@ -471,10 +542,10 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Give ex
     return {
       business,
       topic,
-      captions: parsed.captions,
+      captions: safe.captions,
       // На случай, если модель всё же вернёт больше: для Instagram оставляем 5.
-      hashtags: platform === 'instagram' ? (parsed.hashtags || []).slice(0, 5) : parsed.hashtags,
-      cta: parsed.cta || '',
+      hashtags: platform === 'instagram' ? safe.hashtags.slice(0, 5) : safe.hashtags,
+      cta: safe.cta,
       activeCaption: 0,
       translations: {},
       activeLang: null
@@ -504,7 +575,11 @@ Captions must stay under ${platformLimits[platform] || 2200} characters. Give ex
       }
       setHistory(prev => [{ business, platform, results: collected }, ...prev].slice(0, 5));
     } catch (err) {
-      if (err.message === 'license') {
+      if (err.message === 'trial_used') {
+        // Пробная генерация с этого устройства уже была -- показываем экран с кодом.
+        try { localStorage.setItem('tg_free_trial_used', 'true'); } catch (e) {}
+        setFreeTrialUsed(true);
+      } else if (err.message === 'license') {
         setUnlocked(false);
         setLicenseError(t.licenseInvalid);
       } else if (err.message === 'limit') {
@@ -568,7 +643,7 @@ CTA: ${JSON.stringify(item.cta)}`;
       const translated = JSON.parse(clean);
 
       setResults(prev => prev.map((r, i) => i === index
-        ? { ...r, translations: { ...r.translations, [targetLangCode]: translated }, activeLang: targetLangCode }
+        ? { ...r, translations: { ...r.translations, [targetLangCode]: normalizePart(translated) }, activeLang: targetLangCode }
         : r
       ));
       succeeded = true;
