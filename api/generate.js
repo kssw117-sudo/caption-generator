@@ -1,8 +1,10 @@
 // api/generate.js
 // Уникальные коды (TAG-...): лимит 15/день и докупленные генерации считаются на сервере
 // (Upstash Redis) -- очисткой кэша не обходится. Неудачная генерация не списывается.
-// Общий код (ACCESS_CODE): у всех покупателей он один, поэтому его лимит считается
-// в браузере каждого покупателя -- иначе все делили бы одни 15 генераций на всех.
+// Общий код (ACCESS_CODE): у всех покупателей он один, поэтому его лимит 15/день считается
+// на сервере отдельно для каждого IP-адреса -- очистка кэша его не сбрасывает,
+// и разные покупатели не делят одни 15 генераций на всех.
+// Пробная генерация: одна на IP-адрес на 30 дней, тоже на сервере.
 // Открыть /api/generate в браузере -- покажет, что работает, а что нет (без секретов).
 
 import {
@@ -12,6 +14,34 @@ import {
 
 // Haiku -- в несколько раз быстрее Sonnet, для капшнов и хештегов качества хватает.
 const MODEL = 'claude-haiku-4-5-20251001';
+
+const TRIAL_TTL = 30 * 24 * 3600;
+
+function clientIp(req) {
+  const fwd = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return fwd || String(req.headers['x-real-ip'] || '') || 'unknown';
+}
+
+// Пробная генерация: одна на IP на 30 дней. Неудачная -- возвращается.
+async function consumeTrial(ip) {
+  const key = `trial:${ip}`;
+  const [set] = await redis([['SET', key, '1', 'NX', 'EX', TRIAL_TTL]]);
+  if (set !== 'OK') return { ok: false };
+  return { ok: true, refundCommand: ['DEL', key] };
+}
+
+// Общий код: 15 в день на каждый IP-адрес.
+async function consumeShared(ip) {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = `limit:shared:${ip}:${today}`;
+  const [count] = await redis([['INCR', key], ['EXPIRE', key, 93600]]);
+  const usage = { used: Math.min(count, DAILY_LIMIT), limit: DAILY_LIMIT, credits: 0 };
+  if (count > DAILY_LIMIT) {
+    await redis([['DECR', key]]);
+    return { ok: false, usage };
+  }
+  return { ok: true, refundCommand: ['DECR', key], usage };
+}
 
 async function checkAndConsume(code) {
   const limitKey = todayKey(code);
@@ -127,9 +157,30 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'No prompt provided' });
   }
 
-  // Серверный лимит -- только для уникальных кодов.
+  // Серверные лимиты: пробная генерация, общий код (по IP) и уникальные коды.
   let consumed = null;
-  if (!isFreeTrial && unique) {
+  const ip = clientIp(req);
+  if (isFreeTrial && !shared && !unique) {
+    try {
+      const result = await consumeTrial(ip);
+      if (!result.ok) {
+        return res.status(403).json({ error: 'trial_used' });
+      }
+      consumed = result;
+    } catch (err) {
+      console.error('Trial check failed, allowing request:', err.message);
+    }
+  } else if (shared) {
+    try {
+      const result = await consumeShared(ip);
+      if (!result.ok) {
+        return res.status(429).json({ error: 'limit_reached', usage: result.usage });
+      }
+      consumed = result;
+    } catch (err) {
+      console.error('Shared limit check failed, allowing request:', err.message);
+    }
+  } else if (unique) {
     try {
       const result = await checkAndConsume(licenseCode);
       if (!result.ok) {
@@ -181,7 +232,7 @@ export default async function handler(req, res) {
       await refund(consumed);
       return res.status(502).json({ error: 'bad_answer' });
     }
-    if (consumed) {
+    if (consumed && consumed.usage) {
       data._usage = consumed.usage;
     }
     return res.status(200).json(data);
