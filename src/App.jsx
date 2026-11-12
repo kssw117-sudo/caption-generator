@@ -1296,38 +1296,8 @@ CTA: ${JSON.stringify(item.cta)}`;
               </div>
               {reached && (
                 <p className="text-xs text-center" style={{ color: '#B34B3C', marginTop: 8 }}>
-                  Today's limit reached — come back tomorrow for {DAILY_LIMIT} more free generations{isUniqueCode ? ', or get more now.' : '.'}
+                  Today's limit reached — come back tomorrow for {DAILY_LIMIT} more free generations.
                 </p>
-              )}
-              {isUniqueCode && (
-                <div style={{ marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid #E4E1D6', background: reached ? '#FAF9F4' : 'transparent' }}>
-                  <p className="text-xs" style={{ color: '#2D2A26', fontWeight: 600, marginBottom: 8 }}>
-                    Need more? Get {CREDITS_PER_PACK} extra generations for {CREDITS_PRICE_LABEL}
-                  </p>
-                  <p className="text-xs" style={{ color: '#87837A', marginBottom: 8 }}>
-                    Extra generations never expire and are used only after your daily free ones run out.
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="email"
-                      value={buyEmail}
-                      onChange={e => setBuyEmail(e.target.value)}
-                      placeholder="Email for the receipt"
-                      className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                      style={{ border: '1px solid #E4E1D6', background: '#FFFFFF', color: '#2D2A26', minWidth: 0 }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleBuyCredits}
-                      disabled={buying}
-                      className="rounded-lg px-4 py-2 text-sm font-medium"
-                      style={{ background: buying ? '#E4E1D6' : 'linear-gradient(90deg, #D97757, #BD5D3A)', color: buying ? '#87837A' : '#F5F4EE', whiteSpace: 'nowrap' }}
-                    >
-                      {buying ? 'Opening…' : `Buy ${CREDITS_PRICE_LABEL}`}
-                    </button>
-                  </div>
-                  {buyError && <p className="text-xs" style={{ color: '#B34B3C', marginTop: 6 }}>{buyError}</p>}
-                </div>
               )}
             </div>
           );
