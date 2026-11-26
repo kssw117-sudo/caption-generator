@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { translate, interfaceDirection } from './tgLocale.js';
 
 // Маленький помощник для IndexedDB — используем только для видео,
 // т.к. оно может быть слишком большим для localStorage (лимит ~5-10 МБ)
@@ -73,8 +74,8 @@ class ErrorBoundary extends React.Component {
     if (this.state.failed) {
       return (
         <div style={{ padding: 32, fontFamily: 'sans-serif', textAlign: 'center' }}>
-          <p>Something went wrong. Please reload the page.</p>
-          <button onClick={() => window.location.reload()} style={{ marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #D97757', background: '#fff', color: '#D97757' }}>Reload</button>
+          <p>{translate(this.props.interfaceLanguage, 'Something went wrong. Please reload the page.')}</p>
+          <button onClick={() => window.location.reload()} style={{ marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #D97757', background: '#fff', color: '#D97757' }}>{translate(this.props.interfaceLanguage, 'Reload')}</button>
         </div>
       );
     }
@@ -82,11 +83,13 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-export default function App() {
-  return <ErrorBoundary><CaptionGenerator /></ErrorBoundary>;
+export default function App({ interfaceLanguage = 'en' }) {
+  return <ErrorBoundary interfaceLanguage={interfaceLanguage}><CaptionGenerator interfaceLanguage={interfaceLanguage} /></ErrorBoundary>;
 }
 
-function CaptionGenerator() {
+function CaptionGenerator({ interfaceLanguage = 'en' }) {
+  const tr = (key, params) => translate(interfaceLanguage, key, params);
+  const isRtl = interfaceDirection(interfaceLanguage) === 'rtl';
   const DAILY_LIMIT = 15;
   const LIMIT_STORAGE_KEY = 'tg_daily_gens';
   const CREDITS_PER_PACK = 30;
@@ -421,7 +424,7 @@ function CaptionGenerator() {
   };
 
   const currentLang = languages.find(l => l.code === language) || languages[0];
-  const t = ui[language] || ui.ru;
+  const t = ui[interfaceLanguage] || ui.en;
 
   const platformNames = {
     instagram: 'Instagram',
@@ -734,11 +737,11 @@ CTA: ${JSON.stringify(item.cta)}`;
   // она сама вызывает /api/redeem-appsumo при необходимости, ставит
   // localStorage-флаги и возвращает пользователя на / с ?welcome=1.
 
-  const headingFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : "'Fraunces', serif";
-  const bodyFont = currentLang.rtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : 'inherit';
+  const headingFont = isRtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : "'Fraunces', serif";
+  const bodyFont = isRtl ? "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif" : 'inherit';
 
   return (
-    <div className="min-h-screen py-10 px-4 relative overflow-hidden" dir={currentLang.rtl ? 'rtl' : 'ltr'} style={{ background: '#F5F4EE', fontFamily: bodyFont }}>
+    <div className="min-h-screen py-10 px-4 relative overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'} style={{ background: '#F5F4EE', fontFamily: bodyFont }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Playfair+Display:ital,wght@0,500;1,500&family=Cairo:wght@400;700&display=swap');
         @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(20px,-24px) scale(1.08); } }
@@ -812,14 +815,14 @@ CTA: ${JSON.stringify(item.cta)}`;
                   background: '#D97757', display: 'inline-block',
                 }} />
                 <div style={{ flex: 1 }}>
-                  <p className="text-sm" style={{ color: '#8A4A38', margin: '0 0 10px', fontWeight: 600 }}>Your free preview is over. Enter your code whenever you're ready to keep going.</p>
+                  <p className="text-sm" style={{ color: '#8A4A38', margin: '0 0 10px', fontWeight: 600 }}>{tr("Your free preview is over. Enter your code whenever you're ready to keep going.")}</p>
                   <a
                     href="/unlock.html"
                     onClick={() => track('unlock_click')}
                     className="inline-block font-medium px-4 py-2 rounded-lg text-sm"
                     style={{ background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#F5F4EE', textDecoration: 'none' }}
                   >
-                    Enter your code →
+                    {tr("Enter your code →")}
                   </a>
                   <a href="/buy.html" onClick={() => track('buy_page_click')} className="block text-xs mt-2" style={{ color: '#A56A45' }}>{t.noCodeText}</a>
                 </div>
@@ -830,7 +833,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                   flexShrink: 0, width: 18, height: 18, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #D97757, #BD5D3A)', display: 'inline-block',
                 }} />
-                <p className="text-sm" style={{ color: '#8A6B1A', margin: 0 }}>Try it free — your first generation is on us. No code needed.</p>
+                <p className="text-sm" style={{ color: '#8A6B1A', margin: 0 }}>{tr("Try it free — your first generation is on us. No code needed.")}</p>
               </div>
             )}
           </div>
@@ -886,9 +889,9 @@ CTA: ${JSON.stringify(item.cta)}`;
               <h2 style={{
                 fontFamily: headingFont, fontSize: 26, fontWeight: 600, color: '#FFFFFF', margin: '0 0 6px',
                 animation: 'textRise 0.4s ease 0.5s both',
-              }}>Welcome</h2>
+              }}>{tr("Welcome")}</h2>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', margin: 0, animation: 'textRise 0.4s ease 0.62s both' }}>
-                You're all set — unlimited generations, let's go.
+                {tr("Access unlocked. You're ready to create.")}
               </p>
             </div>
           </div>
@@ -982,7 +985,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                 <button
                   type="button"
                   onClick={() => setPhoto(null)}
-                  aria-label="Remove photo"
+                  aria-label={tr("Remove photo")}
                   className="flex items-center justify-center rounded-lg"
                   style={{ width: 36, height: 36, flexShrink: 0, background: '#FDECEC', color: '#C0574B', border: '1px solid #F3C4C4', fontSize: 16, cursor: 'pointer' }}
                 >
@@ -1011,7 +1014,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                 <button
                   type="button"
                   onClick={() => { setVideo(null); setVideoFrame(null); }}
-                  aria-label="Remove video"
+                  aria-label={tr("Remove video")}
                   className="flex items-center justify-center rounded-lg"
                   style={{ width: 36, height: 36, flexShrink: 0, background: '#FDECEC', color: '#C0574B', border: '1px solid #F3C4C4', fontSize: 16, cursor: 'pointer' }}
                 >
@@ -1039,7 +1042,7 @@ CTA: ${JSON.stringify(item.cta)}`;
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{t.languageLabel}</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#6B6659' }}>{tr('Post language')}</label>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
@@ -1135,7 +1138,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                         ) : (
                           <div style={{ width: '100%', aspectRatio: '1.6 / 1', borderRadius: 10, background: 'linear-gradient(135deg, rgba(217,119,87,0.10), rgba(189,93,58,0.10))', marginBottom: 12 }} />
                         )}
-                        <p className="text-sm mb-2" style={{ color: '#3A362F' }}>{display.captions[item.activeCaption]}</p>
+                        <p dir="auto" className="text-sm mb-2" style={{ color: '#3A362F' }}>{display.captions[item.activeCaption]}</p>
                         <div className="flex flex-wrap gap-1">
                           {display.hashtags.slice(0, 5).map((tag, i) => (
                             <span key={i} className="text-xs" style={{ color: '#A56A45' }}>#{tag}</span>
@@ -1159,7 +1162,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                             boxShadow: item.activeCaption === i ? '0 6px 16px rgba(217,119,87,0.10)' : 'none'
                           }}
                         >
-                          <p className="text-sm flex-1" style={{ color: '#3A362F' }}>{cap}</p>
+                          <p dir="auto" className="text-sm flex-1" style={{ color: '#3A362F' }}>{cap}</p>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleCopy(cap, `cap-${idx}-${i}`); }}
                             className="text-xs whitespace-nowrap flex-shrink-0"
@@ -1176,7 +1179,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                     <div>
                       <h2 className="text-sm font-semibold mb-2" style={{ color: '#D97757' }}>{t.ctaHeading}</h2>
                       <div className="rounded-lg p-3 flex items-center justify-between gap-3" style={{ background: '#FFFFFF', border: '1px solid #E4E1D6' }}>
-                        <p className="text-sm flex-1" style={{ color: '#3A362F' }}>{display.cta}</p>
+                        <p dir="auto" className="text-sm flex-1" style={{ color: '#3A362F' }}>{display.cta}</p>
                         <button
                           onClick={() => handleCopy(display.cta, `cta-${idx}`)}
                           className="text-xs whitespace-nowrap flex-shrink-0"
@@ -1282,9 +1285,9 @@ CTA: ${JSON.stringify(item.cta)}`;
                 <p className="text-xs text-center" style={{ color: '#D97757', fontWeight: 600, marginBottom: 8 }}>{creditsNotice}</p>
               )}
               <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
-                <span className="text-xs" style={{ color: '#87837A' }}>Today's free generations</span>
+                <span className="text-xs" style={{ color: '#87837A' }}>{tr("Today's free generations")}</span>
                 <span className="text-xs" style={{ color: '#87837A', fontWeight: 600 }}>
-                  {Math.max(DAILY_LIMIT - used, 0)}/{DAILY_LIMIT} left{credits > 0 ? ` + ${credits} extra` : ''}
+                  {Math.max(DAILY_LIMIT - used, 0)}/{DAILY_LIMIT} {tr('left')}{credits > 0 ? ` + ${credits} ${tr('extra')}` : ''}
                 </span>
               </div>
               <div style={{ height: 4, borderRadius: 999, background: '#E4E1D6', overflow: 'hidden' }}>
@@ -1296,7 +1299,7 @@ CTA: ${JSON.stringify(item.cta)}`;
               </div>
               {reached && (
                 <p className="text-xs text-center" style={{ color: '#B34B3C', marginTop: 8 }}>
-                  Today's limit reached — come back tomorrow for {DAILY_LIMIT} more free generations.
+                  {tr("Today's limit reached — come back tomorrow for {limit} more free generations.", {limit: DAILY_LIMIT})}
                 </p>
               )}
             </div>
@@ -1311,9 +1314,9 @@ CTA: ${JSON.stringify(item.cta)}`;
             <span className="text-xs" style={{ color: '#87837A' }}>Powered by Claude</span>
           </div>
           <div className="flex items-center gap-3 mt-1">
-            <a href="/terms.html" className="text-xs" style={{ color: '#A56A45' }}>Terms</a>
-            <a href="/privacy.html" className="text-xs" style={{ color: '#A56A45' }}>Privacy</a>
-            <a href="/refund.html" className="text-xs" style={{ color: '#A56A45' }}>Refunds</a>
+            <a href="/terms.html" className="text-xs" style={{ color: '#A56A45' }}>{tr("Terms")}</a>
+            <a href="/privacy.html" className="text-xs" style={{ color: '#A56A45' }}>{tr("Privacy")}</a>
+            <a href="/refund.html" className="text-xs" style={{ color: '#A56A45' }}>{tr("Refunds")}</a>
           </div>
           <div className="mt-1">
             {!showSupportEmail ? (
@@ -1322,7 +1325,7 @@ CTA: ${JSON.stringify(item.cta)}`;
                 className="text-xs"
                 style={{ color: '#A56A45', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
-                Support
+                {tr("Support")}
               </button>
             ) : (
               <a href="mailto:kssw117@gmail.com" className="text-xs" style={{ color: '#A56A45' }}>
@@ -1342,7 +1345,7 @@ CTA: ${JSON.stringify(item.cta)}`;
           playPopSound(!showHelpBubble);
           setShowHelpBubble(v => !v);
         }}
-        aria-label="How it works"
+        aria-label={tr("How it works")}
         style={{
           position: 'fixed', bottom: 20, right: 20, width: 48, height: 48, borderRadius: '50%',
           background: 'linear-gradient(90deg, #D97757, #BD5D3A)', color: '#FFF', border: 'none',
@@ -1361,9 +1364,9 @@ CTA: ${JSON.stringify(item.cta)}`;
             border: '1px solid #EDEAE0', zIndex: 50,
           }}
         >
-          <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 600, color: '#2D2A26' }}>How TagGenerator AI works</p>
+          <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 600, color: '#2D2A26' }}>{tr("How TagGenerator AI works")}</p>
           <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: '#5B564C' }}>
-            Upload a photo or video. The AI actually looks at it, analyzes what's really in the shot, and writes the post for you. Instagram, TikTok, WhatsApp, YouTube Shorts, X, Pinterest. Your brand voice in every line. Batch mode for a full week in one click.
+            {tr("Upload a photo or video. The AI actually looks at it, analyzes what's really in the shot, and writes the post for you. Instagram, TikTok, WhatsApp, YouTube Shorts, X, Pinterest. Your brand voice in every line. Batch mode for a full week in one click.")}
           </p>
         </div>
       )}
