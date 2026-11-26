@@ -147,3 +147,23 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,Arial,sa
 @media (max-width:760px) { .tg-try-section{padding-top:56px;} .tg-live-app > .min-h-screen > .max-w-xl > .rounded-xl.p-5.space-y-4{padding:18px !important;} }
 @media (max-width:480px) { .tg-live-app > .min-h-screen > .max-w-xl > .rounded-xl.p-5.space-y-4{grid-template-columns:1fr;} .tg-live-app > .min-h-screen > .max-w-xl > .rounded-xl.p-5.space-y-4 > *{grid-column:1/-1 !important;} .tg-rebrand .tg-landing .strip{grid-template-columns:repeat(2,minmax(0,1fr));} }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+
+
+/* V5: restore the original floating hashtag motif on the redesigned page.
+   The separate background layer never receives pointer events or covers controls. */
+.tg-rebrand.wrap{position:relative;isolation:isolate}
+.tg-rebrand > .tg-landing,.tg-rebrand > .tg-try-section{position:relative;z-index:1}
+.tg-rebrand > .tg-floating-hashtags{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;z-index:0}
+.tg-rebrand .tg-floating-hashtag{position:absolute;display:block;font-family:Fraunces,Georgia,serif;font-weight:700;line-height:1;opacity:.20;animation-name:tgFloatingHashtag;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+.tg-rebrand .tg-floating-hashtag--one{top:12%;left:0;font-size:120px;color:#D97757;animation-duration:10s}
+.tg-rebrand .tg-floating-hashtag--two{top:58%;right:1%;font-size:90px;color:#BD5D3A;animation-duration:13s;animation-delay:-4s}
+.tg-rebrand .tg-floating-hashtag--three{top:3%;right:1%;font-size:60px;color:#C0574B;animation-duration:8s;animation-delay:-2s}
+@keyframes tgFloatingHashtag{0%,100%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(14px,-20px) rotate(6deg)}}
+/* Let the background motif show through the old app's plain outer frame. */
+.tg-rebrand .tg-live-app > .min-h-screen{background:transparent!important}
+@media(max-width:760px){
+ .tg-rebrand .tg-floating-hashtag--one{top:9%;left:0;font-size:76px}
+ .tg-rebrand .tg-floating-hashtag--two{top:58%;right:0;font-size:64px}
+ .tg-rebrand .tg-floating-hashtag--three{top:2%;right:0;font-size:46px}
+}
+@media(prefers-reduced-motion:reduce){.tg-rebrand .tg-floating-hashtag{animation:none;transform:none}}
