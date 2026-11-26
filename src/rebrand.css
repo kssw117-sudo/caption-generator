@@ -196,3 +196,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,Arial,sa
  .tg-rebrand .tg-floating-hashtag--three{top:79vh;left:5px;font-size:52px}
 }
 @media(prefers-reduced-motion:reduce){.tg-rebrand .tg-floating-hashtag{animation:none;transform:none}}
+
+/* V7: separate, accessible, persistent interface-language selector. */
+.tg-rebrand .tg-landing nav{flex-wrap:wrap;gap:12px}
+.tg-rebrand .tg-landing nav .links{flex-wrap:wrap;gap:12px;min-width:0}
+.tg-rebrand .tg-landing .tg-interface-language{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:7px 10px;border:1px solid var(--line,#E4E1D6);border-radius:999px;background:#fff;color:var(--ink,#2D2A26);flex-shrink:0}
+.tg-rebrand .tg-landing .tg-interface-language select{max-width:140px;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer;padding:4px 2px;outline-offset:3px}
+.tg-rebrand .tg-landing .tg-interface-language svg{flex-shrink:0}
+.tg-rebrand .tg-landing .hero>div,.tg-rebrand .tg-landing .grid3>*{min-width:0}
+.tg-rebrand .tg-landing h1,.tg-rebrand .tg-landing h2,.tg-rebrand .tg-landing .btn{overflow-wrap:anywhere}
+.tg-rebrand[dir="rtl"] .tg-landing .caption,.tg-rebrand[dir="rtl"] .tg-landing .tags{direction:ltr;text-align:left}
+.tg-rebrand[dir="rtl"] .tg-landing .hero h1,.tg-rebrand[dir="rtl"] .tg-landing .hero .lead{text-align:start}
+.tg-rebrand[dir="rtl"] .tg-landing .checks li{padding-inline-start:24px;padding-inline-end:0}
+.tg-rebrand[dir="rtl"] .tg-landing .checks li:before{left:auto;right:0}
+@media(max-width:760px){.tg-rebrand .tg-landing nav .links{display:flex;justify-content:flex-end;gap:8px}.tg-rebrand .tg-landing .tg-interface-language{padding:5px 8px}.tg-rebrand .tg-landing .tg-interface-language select{font-size:13px;max-width:120px}.tg-rebrand .tg-landing nav .btn.dark{display:none}}
