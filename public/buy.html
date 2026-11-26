@@ -13,19 +13,45 @@
     position: relative; overflow-x: hidden;
   }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  /* Same floating hashtag motif as the TagGenerator main page. */
   @keyframes floatTag {
-    0%   { transform: translate(0, 0) rotate(-8deg); }
-    50%  { transform: translate(14px, -22px) rotate(4deg); }
-    100% { transform: translate(0, 0) rotate(-8deg); }
+    0%, 100% { transform: translate(0, 0) rotate(-6deg); }
+    50% { transform: translate(14px, -20px) rotate(6deg); }
+  }
+  .floating-hashes {
+    position: fixed; inset: 0; overflow: hidden; z-index: 0;
+    pointer-events: none; user-select: none;
   }
   .floating-hash {
-    position: absolute; font-family: 'Fraunces', serif; font-weight: 700;
-    color: rgba(217,119,87,0.16); pointer-events: none; user-select: none;
-    animation: floatTag 7s ease-in-out infinite;
+    position: absolute; display: block; font-family: Arial, sans-serif;
+    font-weight: 800; line-height: 1; opacity: .38;
+    text-shadow: 0 2px 12px rgba(189,93,58,.07);
+    animation: floatTag 10s ease-in-out infinite;
   }
-  .floating-hash.h1 { font-size: 180px; top: 4%; left: 4%; animation-duration: 8s; }
-  .floating-hash.h2 { font-size: 90px; bottom: 6%; right: 6%; animation-duration: 6s; animation-delay: -2s; color: rgba(217,119,87,0.12); }
-  .floating-hash.h3 { font-size: 60px; top: 50%; right: 12%; animation-duration: 9s; animation-delay: -4s; color: rgba(217,119,87,0.1); }
+  .floating-hash.h1 {
+    top: 25vh; left: max(8px, calc((100vw - 1450px)/2));
+    font-size: clamp(74px,10vw,148px); color: #D97757;
+  }
+  .floating-hash.h2 {
+    top: 52vh; right: max(8px, calc((100vw - 1450px)/2));
+    font-size: clamp(60px,8vw,116px); color: #BD5D3A;
+    animation-duration: 13s; animation-delay: -4s;
+  }
+  .floating-hash.h3 {
+    top: 79vh; left: max(18px, calc((100vw - 1370px)/2));
+    font-size: clamp(48px,5vw,78px); color: #C0574B;
+    animation-duration: 8s; animation-delay: -2s;
+  }
+  @media (max-width: 760px) {
+    .floating-hash { opacity: .27; }
+    .floating-hash.h1 { top: 18vh; left: 2px; font-size: 66px; }
+    .floating-hash.h2 { top: 51vh; right: 3px; font-size: 65px; }
+    .floating-hash.h3 { top: 79vh; left: 5px; font-size: 52px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .floating-hash { animation: none; transform: none; }
+  }
+
 
   .wrap { max-width: 640px; margin: 0 auto; padding: 60px 24px 100px; position: relative; z-index: 1; }
   .eyebrow { text-align: center; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A56A45; margin-bottom: 14px; animation: fadeUp 0.5s ease both; }
@@ -69,9 +95,11 @@
 </head>
 <body>
 
-<span class="floating-hash h1">#</span>
-<span class="floating-hash h2">#</span>
-<span class="floating-hash h3">#</span>
+<div class="floating-hashes" aria-hidden="true">
+  <span class="floating-hash h1">#</span>
+  <span class="floating-hash h2">#</span>
+  <span class="floating-hash h3">#</span>
+</div>
 
 <div class="wrap">
   <div class="eyebrow">AI-powered &middot; Instant access</div>
