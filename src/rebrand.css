@@ -167,3 +167,32 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,Arial,sa
  .tg-rebrand .tg-floating-hashtag--three{top:2%;right:0;font-size:46px}
 }
 @media(prefers-reduced-motion:reduce){.tg-rebrand .tg-floating-hashtag{animation:none;transform:none}}
+
+/* V6: a viewport-based decorative layer; always visible in the margins. */
+.tg-rebrand > .tg-floating-hashtags{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.tg-rebrand .tg-floating-hashtag{font-family:Arial,sans-serif;font-weight:800;opacity:.38;line-height:1;text-shadow:0 2px 12px rgba(189,93,58,.07)}
+.tg-rebrand .tg-floating-hashtag--one{top:25vh;left:max(8px,calc((100vw - 1450px)/2));font-size:clamp(74px,10vw,148px);color:#D97757}
+.tg-rebrand .tg-floating-hashtag--two{top:52vh;right:max(8px,calc((100vw - 1450px)/2));font-size:clamp(60px,8vw,116px);color:#BD5D3A}
+.tg-rebrand .tg-floating-hashtag--three{top:79vh;left:max(18px,calc((100vw - 1370px)/2));right:auto;font-size:clamp(48px,5vw,78px);color:#C0574B}
+.tg-rebrand .tg-landing .hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.tg-rebrand .tg-landing .window,.tg-rebrand .tg-landing .windowbody{min-width:0}
+.tg-rebrand .tg-landing .tg-tag-heading{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;letter-spacing:.7px;color:var(--muted);margin:14px 0 8px}
+.tg-rebrand .tg-landing .tg-tag-heading span:last-child{text-transform:none;letter-spacing:0;font-weight:500}
+.tg-rebrand .tg-landing .tags{display:flex;flex-wrap:wrap;gap:7px;overflow:visible;height:auto;max-height:none;align-items:flex-start}
+.tg-rebrand .tg-landing .tag{display:inline-block;max-width:100%;overflow-wrap:anywhere;padding:5px 9px;border:1px solid #E8C4B4;border-radius:7px;background:#FBEFE8;color:#8A422B;font-size:12px;line-height:1.45;font-weight:650}
+/* The original support controls remain in App.jsx; the matching full footer is rendered once at page end. */
+.tg-live-app > .min-h-screen > .max-w-xl > .flex.flex-col.items-center.justify-center.gap-1\.5.mt-10.pt-6:last-child{display:none!important}
+.tg-rebrand .tg-landing .tg-brand-footer{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:32px 12px 38px;color:var(--muted);font-size:13px}
+.tg-rebrand .tg-landing .tg-footer-credit{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.tg-rebrand .tg-landing .tg-footer-links{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.tg-rebrand .tg-landing .tg-brand-footer a,.tg-rebrand .tg-landing .tg-brand-footer button{color:#98512F;text-decoration:underline;text-underline-offset:3px}
+.tg-rebrand .tg-landing .tg-brand-footer button{padding:0;border:0;background:transparent;font:inherit}
+.tg-rebrand .tg-landing .tg-footer-legal{font-size:11px;line-height:1.5;overflow-wrap:anywhere;margin-top:3px}
+@media(max-width:760px){
+ .tg-rebrand .tg-landing .hero{grid-template-columns:minmax(0,1fr)}
+ .tg-rebrand .tg-floating-hashtag{opacity:.27}
+ .tg-rebrand .tg-floating-hashtag--one{top:18vh;left:2px;font-size:66px}
+ .tg-rebrand .tg-floating-hashtag--two{top:51vh;right:3px;font-size:65px}
+ .tg-rebrand .tg-floating-hashtag--three{top:79vh;left:5px;font-size:52px}
+}
+@media(prefers-reduced-motion:reduce){.tg-rebrand .tg-floating-hashtag{animation:none;transform:none}}
